@@ -5,8 +5,13 @@ ET AI Hackathon 2.0, Problem Statement 2.
 import asyncio
 from contextlib import asynccontextmanager
 
+from pathlib import Path
+
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")  # keys stay local, never committed
 
 from .engines import news
 from .routers import assets, intel, risk, scenario

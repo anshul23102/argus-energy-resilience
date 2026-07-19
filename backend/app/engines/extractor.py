@@ -63,7 +63,9 @@ def _extract_rules(text: str) -> dict | None:
 # --- LLM providers (each raises on failure; the chain catches) ---------------
 def _call_gemini(prompt: str) -> str:
     key = os.environ["GEMINI_API_KEY"]
-    model = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")  # 2.0-flash deprecated Mar 2026
+    # "-latest" alias: named generations (2.0/2.5-flash) get closed to new accounts
+    # as they age; the alias always resolves to the current free-tier flash model.
+    model = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
     r = httpx.post(
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         params={"key": key},
