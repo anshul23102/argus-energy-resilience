@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "description": "India's crude import terminals (SPM/SBM + berths) and Strategic Petroleum Reserve sites.",
+    "sources": [
+      "Indian Ports Association / port authority public data",
+      "ISPRL (Indian Strategic Petroleum Reserves Ltd) — Phase I sites",
+      "PPAC import infrastructure notes"
+    ]
+  },
+  "import_ports": [
+    {"id": "vadinar", "name": "Vadinar (SPM + terminal)", "state": "Gujarat", "lat": 22.47, "lon": 69.7, "coast": "west", "handles_vlcc": true, "linked_refineries": ["nayara-vadinar", "iocl-panipat", "iocl-koyali", "iocl-mathura", "bpcl-bina"]},
+    {"id": "sikka", "name": "Sikka / Jamnagar (RIL SPMs)", "state": "Gujarat", "lat": 22.43, "lon": 69.83, "coast": "west", "handles_vlcc": true, "linked_refineries": ["ril-jamnagar-sez", "ril-jamnagar-dta"]},
+    {"id": "mundra", "name": "Mundra (HMEL SPM)", "state": "Gujarat", "lat": 22.74, "lon": 69.7, "coast": "west", "handles_vlcc": true, "linked_refineries": ["hmel-bathinda"]},
+    {"id": "mumbai", "name": "Mumbai (Jawahar Dweep)", "state": "Maharashtra", "lat": 18.95, "lon": 72.83, "coast": "west", "handles_vlcc": false, "linked_refineries": ["bpcl-mumbai", "hpcl-mumbai"]},
+    {"id": "new-mangalore", "name": "New Mangalore (SPM)", "state": "Karnataka", "lat": 12.93, "lon": 74.8, "coast": "west", "handles_vlcc": true, "linked_refineries": ["mrpl-mangalore"]},
+    {"id": "kochi", "name": "Kochi (SPM)", "state": "Kerala", "lat": 9.97, "lon": 76.24, "coast": "west", "handles_vlcc": true, "linked_refineries": ["bpcl-kochi"]},
+    {"id": "chennai", "name": "Chennai / Ennore", "state": "Tamil Nadu", "lat": 13.28, "lon": 80.34, "coast": "east", "handles_vlcc": false, "linked_refineries": ["cpcl-manali"]},
+    {"id": "visakhapatnam", "name": "Visakhapatnam", "state": "Andhra Pradesh", "lat": 17.69, "lon": 83.29, "coast": "east", "handles_vlcc": false, "linked_refineries": ["hpcl-visakh"]},
+    {"id": "paradip", "name": "Paradip (SPM)", "state": "Odisha", "lat": 20.26, "lon": 86.7, "coast": "east", "handles_vlcc": true, "linked_refineries": ["iocl-paradip", "iocl-haldia", "iocl-barauni", "nrl-numaligarh"]}
+  ],
+  "spr_sites": [
+    {"id": "spr-visakhapatnam", "name": "ISPRL Visakhapatnam", "lat": 17.68, "lon": 83.2, "capacity_mmt": 1.33, "type": "underground rock cavern", "phase": "I"},
+    {"id": "spr-mangalore", "name": "ISPRL Mangalore", "lat": 12.92, "lon": 74.85, "capacity_mmt": 1.5, "type": "underground rock cavern", "phase": "I"},
+    {"id": "spr-padur", "name": "ISPRL Padur", "lat": 13.13, "lon": 74.77, "capacity_mmt": 2.5, "type": "underground rock cavern", "phase": "I"}
+  ],
+  "spr_notes": "Phase I total 5.33 MMT ≈ 9.5 days of net import cover (PDF problem statement uses the same figure). Phase II (Chandikhol 4.0 MMT, Padur-II 2.5 MMT) approved but not yet operational — modelled as unavailable."
+}

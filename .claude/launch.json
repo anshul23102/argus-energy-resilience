@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "argus-backend",
+      "runtimeExecutable": "/Users/aj.ts1758/ET/backend/.venv/bin/uvicorn",
+      "runtimeArgs": ["app.main:app", "--port", "8000", "--app-dir", "/Users/aj.ts1758/ET/backend"],
+      "port": 8000
+    },
+    {
+      "name": "argus-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--prefix", "/Users/aj.ts1758/ET/frontend"],
+      "port": 3000
+    }
+  ]
+}

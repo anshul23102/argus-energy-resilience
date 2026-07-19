@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "description": "Maritime chokepoints and shipping corridors serving India's crude imports. Distances in nautical miles (nm) and typical laden voyage days at ~12.5 kn are approximations for modelling; waypoints are coarse polylines for map rendering.",
+    "sources": [
+      "EIA World Oil Transit Chokepoints report (public)",
+      "Standard sea-route distance tables (sea-distances.org style approximations)"
+    ]
+  },
+  "chokepoints": [
+    {"id": "hormuz", "name": "Strait of Hormuz", "lat": 26.57, "lon": 56.25, "daily_oil_flow_mbd": 20.5, "india_dependency_pct": 42, "width_nm": 21, "alternatives": "Saudi East-West pipeline (Yanbu), UAE ADCOP (Fujairah) — combined bypass ~6.5 mb/d"},
+    {"id": "bab-el-mandeb", "name": "Bab el-Mandeb", "lat": 12.58, "lon": 43.33, "daily_oil_flow_mbd": 8.7, "india_dependency_pct": 12, "width_nm": 18, "alternatives": "Cape of Good Hope (+10-14 days)"},
+    {"id": "suez", "name": "Suez Canal / SUMED", "lat": 30.42, "lon": 32.35, "daily_oil_flow_mbd": 9.2, "india_dependency_pct": 10, "width_nm": 0.12, "alternatives": "Cape of Good Hope"},
+    {"id": "malacca", "name": "Strait of Malacca", "lat": 2.5, "lon": 101.0, "daily_oil_flow_mbd": 23.7, "india_dependency_pct": 4, "width_nm": 1.5, "alternatives": "Sunda/Lombok straits (+2-3 days)"},
+    {"id": "cape-good-hope", "name": "Cape of Good Hope (routing point)", "lat": -34.8, "lon": 19.9, "daily_oil_flow_mbd": null, "india_dependency_pct": null, "width_nm": null, "alternatives": "Open ocean routing point, not a chokepoint proper"},
+    {"id": "danish-straits", "name": "Danish Straits", "lat": 55.6, "lon": 12.7, "daily_oil_flow_mbd": 2.9, "india_dependency_pct": 5, "width_nm": 2.5, "alternatives": "None for Baltic exports"}
+  ],
+  "routes": [
+    {"id": "pg-west-india", "name": "Persian Gulf → West India", "from_terminals": ["basra", "ras-tanura", "mina-al-ahmadi", "jebel-dhanna"], "to_ports": ["vadinar", "sikka", "mundra", "mumbai"], "chokepoints": ["hormuz"], "distance_nm": 1250, "voyage_days": 4.5, "waypoints": [[48.8, 29.68], [50.5, 27.0], [56.25, 26.57], [58.5, 24.5], [64.0, 23.0], [69.7, 22.47]]},
+    {"id": "fujairah-west-india", "name": "Fujairah → West India (Hormuz bypass)", "from_terminals": ["fujairah"], "to_ports": ["vadinar", "sikka"], "chokepoints": [], "distance_nm": 1050, "voyage_days": 3.8, "waypoints": [[56.35, 25.18], [60.0, 24.0], [65.0, 23.0], [69.7, 22.47]]},
+    {"id": "redsea-west-india", "name": "Yanbu (Red Sea) → West India", "from_terminals": ["yanbu"], "to_ports": ["vadinar", "sikka"], "chokepoints": ["bab-el-mandeb"], "distance_nm": 2450, "voyage_days": 8.5, "waypoints": [[38.23, 23.97], [41.0, 16.0], [43.33, 12.58], [45.5, 12.0], [52.0, 13.5], [60.0, 17.0], [69.7, 22.47]]},
+    {"id": "blacksea-suez-india", "name": "Novorossiysk → Suez → West India", "from_terminals": ["novorossiysk"], "to_ports": ["vadinar", "sikka", "new-mangalore"], "chokepoints": ["suez", "bab-el-mandeb"], "distance_nm": 4600, "voyage_days": 16, "waypoints": [[37.8, 44.72], [29.0, 41.0], [26.0, 35.5], [32.35, 30.42], [33.5, 27.5], [38.5, 20.5], [43.33, 12.58], [50.0, 12.5], [60.0, 15.0], [69.7, 22.47]]},
+    {"id": "baltic-suez-india", "name": "Primorsk → Suez → West India", "from_terminals": ["primorsk"], "to_ports": ["vadinar", "sikka"], "chokepoints": ["danish-straits", "suez", "bab-el-mandeb"], "distance_nm": 8100, "voyage_days": 27, "waypoints": [[28.72, 60.34], [12.7, 55.6], [1.0, 50.5], [-5.5, 36.0], [12.0, 33.5], [32.35, 30.42], [43.33, 12.58], [60.0, 15.0], [69.7, 22.47]]},
+    {"id": "baltic-cape-india", "name": "Primorsk → Cape → West India (Suez avoid)", "from_terminals": ["primorsk"], "to_ports": ["vadinar", "sikka"], "chokepoints": ["danish-straits", "cape-good-hope"], "distance_nm": 11800, "voyage_days": 39, "waypoints": [[28.72, 60.34], [12.7, 55.6], [-5.5, 36.0], [-15.0, 20.0], [-5.0, -10.0], [10.0, -25.0], [19.9, -34.8], [45.0, -25.0], [60.0, -5.0], [69.7, 22.47]]},
+    {"id": "kozmino-india", "name": "Kozmino → Malacca → East India", "from_terminals": ["kozmino"], "to_ports": ["paradip", "visakhapatnam", "chennai"], "chokepoints": ["malacca"], "distance_nm": 4200, "voyage_days": 14, "waypoints": [[133.04, 42.74], [125.0, 30.0], [112.0, 12.0], [104.0, 3.0], [101.0, 2.5], [95.0, 5.5], [86.7, 20.26]]},
+    {"id": "wafrica-india", "name": "West Africa → West India", "from_terminals": ["bonny", "qua-iboe", "cabinda"], "to_ports": ["vadinar", "sikka", "kochi"], "chokepoints": ["cape-good-hope"], "distance_nm": 7200, "voyage_days": 24, "waypoints": [[7.15, 4.42], [5.0, -8.0], [12.0, -25.0], [19.9, -34.8], [45.0, -25.0], [60.0, -5.0], [69.7, 22.47]]},
+    {"id": "usg-suez-india", "name": "US Gulf → Suez → West India", "from_terminals": ["corpus-christi", "houston"], "to_ports": ["vadinar", "sikka"], "chokepoints": ["suez", "bab-el-mandeb"], "distance_nm": 9800, "voyage_days": 33, "waypoints": [[-97.05, 27.8], [-80.0, 25.0], [-40.0, 33.0], [-8.0, 36.0], [12.0, 33.5], [32.35, 30.42], [43.33, 12.58], [60.0, 15.0], [69.7, 22.47]]},
+    {"id": "usg-cape-india", "name": "US Gulf → Cape → West India (Suez avoid)", "from_terminals": ["corpus-christi", "houston"], "to_ports": ["vadinar", "sikka"], "chokepoints": ["cape-good-hope"], "distance_nm": 11500, "voyage_days": 38, "waypoints": [[-97.05, 27.8], [-60.0, 15.0], [-30.0, -5.0], [-5.0, -25.0], [19.9, -34.8], [45.0, -25.0], [60.0, -5.0], [69.7, 22.47]]}
+  ],
+  "waypoint_format": "[lon, lat] pairs (GeoJSON order) — coarse for rendering + distance sanity, not navigation."
+}
