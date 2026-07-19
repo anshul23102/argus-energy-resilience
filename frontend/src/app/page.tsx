@@ -72,7 +72,17 @@ export default function WarRoom() {
 
     const map = new maplibregl.Map({
       container: mapDiv.current,
-      style: "https://basemaps.cartocdn.com/gl/dark-matter-nolabels-gl-style/style.json",
+      // Self-hosted basemap (Natural Earth land polygons, bundled in /public):
+      // zero external requests — the war room renders on venue wifi or none at all.
+      style: {
+        version: 8,
+        sources: { land: { type: "geojson", data: "/land.geojson" } },
+        layers: [
+          { id: "ocean", type: "background", paint: { "background-color": "#0b1322" } },
+          { id: "land", type: "fill", source: "land", paint: { "fill-color": "#141d2e" } },
+          { id: "coast", type: "line", source: "land", paint: { "line-color": "#2a3a52", "line-width": 0.6 } },
+        ],
+      },
       center: [62, 18],
       zoom: 3.1,
       attributionControl: false,
@@ -161,7 +171,12 @@ export default function WarRoom() {
 
     const overlay = new MapboxOverlay({ layers });
     map.addControl(overlay);
-    return () => { map.remove(); };
+    // map may initialize before the flex layout settles — keep canvas synced to container
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(mapDiv.current);
+    map.once("load", () => map.resize());
+    map.on("error", (e) => console.error("maplibre:", e.error?.message ?? e));
+    return () => { ro.disconnect(); map.remove(); };
   }, [refineries, ports, spr, chokepoints, routes, risk]);
 
   const totalCapacity = refineries.reduce((s, r) => s + r.capacity_mmtpa, 0);

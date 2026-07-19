@@ -114,7 +114,7 @@ export default function ScenarioConsole({ chokepoints }: { chokepoints: { id: st
           {err && <div className="mt-3 text-[11px] text-red-400">backend error: {err}</div>}
 
           {res && h && hu && (
-            <div className="mt-3 grid grid-cols-2 gap-4">
+            <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
               {/* left: impact */}
               <div>
                 <div className="mb-1 flex justify-between text-[10px] text-slate-500">
@@ -151,26 +151,32 @@ export default function ScenarioConsole({ chokepoints }: { chokepoints: { id: st
                   <span>EXECUTABLE ORDER SHEET (LP-OPTIMIZED)</span>
                   <span>{res.procurement.coverage_pct}% of gap · Δ${res.procurement.daily_premium_musd}M/day</span>
                 </div>
-                <table className="w-full text-[10px]">
-                  <thead>
-                    <tr className="border-b border-slate-700 text-left text-slate-500">
-                      <th className="py-1">SUPPLIER</th><th>GRADE</th><th>ROUTE</th>
-                      <th className="text-right">MB/D</th><th className="text-right">ETA</th><th className="text-right">$/BBL</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {res.procurement.orders.map((o, i) => (
-                      <tr key={i} className="border-b border-slate-800/60 text-slate-300">
-                        <td className="py-1.5">{o.supplier}</td>
-                        <td className="text-amber-300/80">{o.grade}</td>
-                        <td className="text-slate-500">{o.route}</td>
-                        <td className="text-right">{o.volume_mbd.toFixed(2)}</td>
-                        <td className="text-right">{o.first_arrival_days}d</td>
-                        <td className="text-right">{o.landed_usd_bbl.toFixed(2)}</td>
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[420px] border-separate border-spacing-0 text-[10px]">
+                    <thead>
+                      <tr className="text-left text-slate-500">
+                        <th className="border-b border-slate-700 py-1 pr-3">SUPPLIER</th>
+                        <th className="border-b border-slate-700 pr-3">GRADE</th>
+                        <th className="border-b border-slate-700 pr-3">ROUTE</th>
+                        <th className="border-b border-slate-700 pr-3 text-right">MB/D</th>
+                        <th className="border-b border-slate-700 pr-3 text-right">ETA</th>
+                        <th className="border-b border-slate-700 text-right">$/BBL</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {res.procurement.orders.map((o, i) => (
+                        <tr key={i} className="text-slate-300">
+                          <td className="whitespace-nowrap border-b border-slate-800/60 py-1.5 pr-3">{o.supplier}</td>
+                          <td className="whitespace-nowrap border-b border-slate-800/60 pr-3 text-amber-300/80">{o.grade}</td>
+                          <td className="whitespace-nowrap border-b border-slate-800/60 pr-3 text-slate-500">{o.route}</td>
+                          <td className="border-b border-slate-800/60 pr-3 text-right tabular-nums">{o.volume_mbd.toFixed(2)}</td>
+                          <td className="border-b border-slate-800/60 pr-3 text-right tabular-nums">{o.first_arrival_days}d</td>
+                          <td className="border-b border-slate-800/60 text-right tabular-nums">{o.landed_usd_bbl.toFixed(2)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
                 <div className="mt-2 rounded border border-slate-800 bg-slate-900/40 p-2 text-[10px] text-slate-400">
                   SPR BRIDGE: {res.spr.total_released_mbbl} million bbl over {res.spr.days_active} days
                   (ISPRL Phase I) · first seaborne relief {res.procurement.first_relief_days ?? "—"}d
