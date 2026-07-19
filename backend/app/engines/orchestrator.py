@@ -41,23 +41,17 @@ def _briefing_template(ctx: dict) -> str:
     return "\n".join(lines)
 
 
-def _briefing_llm(ctx: dict) -> str | None:
-    prov = provider()
-    if prov == "rules":
-        return None
-    from .extractor import _call_gemini, _call_groq, _call_anthropic  # reuse providers
+def _briefing_llm(ctx: dict) -> tuple[str, str] | None:
     import json as _json
+
+    from .extractor import llm_complete
 
     prompt = (
         "You are the briefing officer of India's energy security war-room. Write a crisp "
         "10-line situation briefing for the Petroleum Ministry from this JSON. Use concrete "
         "numbers. No preamble, no markdown headers.\n" + _json.dumps(ctx, default=str)[:6000]
     )
-    try:
-        return {"gemini": _call_gemini, "groq": _call_groq,
-                "anthropic": _call_anthropic}[prov](prompt)
-    except Exception:
-        return None
+    return llm_complete(prompt)  # tries gemini -> groq -> anthropic; None if no keys
 
 
 def respond(chokepoint_id: str, closure_pct: float = 60.0, duration_days: int = 21,
@@ -94,7 +88,9 @@ def respond(chokepoint_id: str, closure_pct: float = 60.0, duration_days: int = 
         "scenario": managed, "unmanaged": unmanaged["headline"],
         "procurement": proc, "spr": reserve,
     }
-    briefing = _briefing_llm(ctx) or _briefing_template(ctx)
+    llm_out = _briefing_llm(ctx)
+    briefing = llm_out[0] if llm_out else _briefing_template(ctx)
+    briefing_author = llm_out[1] if llm_out else "template"
     tick("briefer: situation briefing drafted")
 
     return {
@@ -104,7 +100,7 @@ def respond(chokepoint_id: str, closure_pct: float = 60.0, duration_days: int = 
         "supply_gap_mbd": gap,
         "procurement": proc, "spr": reserve,
         "briefing": briefing,
-        "briefing_author": provider(),
+        "briefing_author": briefing_author,
         "response_clock": clock,
         "total_response_seconds": round(time.time() - t0, 2),
     }

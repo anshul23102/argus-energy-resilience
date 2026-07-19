@@ -9,7 +9,7 @@ import time
 
 import httpx
 
-from .extractor import extract
+from .extractor import extract_batch
 from .risk import ENGINE, Event
 
 GDELT_URL = "https://api.gdeltproject.org/api/v2/doc/doc"
@@ -70,19 +70,20 @@ def poll(hours: int = 24, max_records: int = 40) -> dict:
             articles = _fetch_rss()
             stats["source"] = "google-news-rss"
         stats["fetched"] = len(articles)
-        extracted: list[tuple[dict, str]] = []
+        fresh: list[dict] = []
         for a in articles:
             url = a.get("url", "")
-            if not url or url in _seen_urls:
+            if not url or url in _seen_urls or not a.get("title"):
                 continue
             _seen_urls.add(url)
-            text = a.get("title", "")
-            if not text:
-                continue
-            ev = extract(text)
-            if ev is None:
-                continue
-            extracted.append((ev, a.get("domain", "unknown")))
+            fresh.append(a)
+        # ONE batched LLM call for the whole cycle — free-tier rate limits are a
+        # per-request budget, so we spend requests per poll, not per headline.
+        results = extract_batch([a["title"] for a in fresh])
+        extracted = [
+            (ev, a.get("domain", "unknown"))
+            for a, ev in zip(fresh, results) if ev is not None
+        ]
         stats["extracted"] = len(extracted)
 
         # Cluster: N articles about the same (corridor, severity) in one poll are one
