@@ -4,59 +4,388 @@
     "sources": [
       "PPAC import statistics FY2024-25 (country shares approximate)",
       "Published crude assays (operator/marketer assay sheets)",
-      "Vortexa/Kpler press summaries for share trends (public articles)"
+      "Vortexa/Kpler press summaries for share trends (public articles)",
+      "Terminal-grade pairings from public export-flow reporting (which grades load where)"
     ]
   },
   "suppliers": [
-    {"id": "russia", "name": "Russia", "share_pct": 36, "export_terminals": [
-      {"id": "novorossiysk", "name": "Novorossiysk", "lat": 44.72, "lon": 37.8, "basin": "black_sea"},
-      {"id": "primorsk", "name": "Primorsk", "lat": 60.34, "lon": 28.72, "basin": "baltic"},
-      {"id": "kozmino", "name": "Kozmino", "lat": 42.74, "lon": 133.04, "basin": "pacific"}
-    ], "grades": ["urals", "espo"], "payment_risk": "high (sanctions price-cap regime)", "notes": "Share surged post-2022; cap/discount dynamics volatile"},
-    {"id": "iraq", "name": "Iraq", "share_pct": 19, "export_terminals": [
-      {"id": "basra", "name": "Basra Oil Terminal", "lat": 29.68, "lon": 48.8, "basin": "persian_gulf"}
-    ], "grades": ["basrah_medium", "basrah_heavy"], "payment_risk": "low", "notes": "Transits Hormuz"},
-    {"id": "saudi-arabia", "name": "Saudi Arabia", "share_pct": 13, "export_terminals": [
-      {"id": "ras-tanura", "name": "Ras Tanura", "lat": 26.64, "lon": 50.16, "basin": "persian_gulf"},
-      {"id": "yanbu", "name": "Yanbu", "lat": 23.97, "lon": 38.23, "basin": "red_sea"}
-    ], "grades": ["arab_light", "arab_medium", "arab_heavy"], "payment_risk": "low", "notes": "Yanbu (Red Sea) partially bypasses Hormuz via East-West pipeline (~5 mb/d capacity)"},
-    {"id": "uae", "name": "United Arab Emirates", "share_pct": 8, "export_terminals": [
-      {"id": "fujairah", "name": "Fujairah", "lat": 25.18, "lon": 56.35, "basin": "gulf_of_oman"},
-      {"id": "jebel-dhanna", "name": "Jebel Dhanna", "lat": 24.19, "lon": 52.6, "basin": "persian_gulf"}
-    ], "grades": ["murban", "das", "upper_zakum"], "payment_risk": "low", "notes": "Murban exports via Fujairah (ADCOP pipeline, ~1.5 mb/d) bypass Hormuz"},
-    {"id": "usa", "name": "United States", "share_pct": 5, "export_terminals": [
-      {"id": "corpus-christi", "name": "Corpus Christi", "lat": 27.8, "lon": -97.05, "basin": "us_gulf"},
-      {"id": "houston", "name": "Houston/Galveston", "lat": 29.33, "lon": -94.75, "basin": "us_gulf"}
-    ], "grades": ["wti_midland", "mars"], "payment_risk": "low", "notes": "Long haul; freight-sensitive"},
-    {"id": "nigeria", "name": "Nigeria", "share_pct": 4, "export_terminals": [
-      {"id": "bonny", "name": "Bonny", "lat": 4.42, "lon": 7.15, "basin": "west_africa"},
-      {"id": "qua-iboe", "name": "Qua Iboe", "lat": 4.33, "lon": 8.0, "basin": "west_africa"}
-    ], "grades": ["bonny_light", "qua_iboe"], "payment_risk": "medium", "notes": "Sweet grades; no chokepoint to India"},
-    {"id": "kuwait", "name": "Kuwait", "share_pct": 3, "export_terminals": [
-      {"id": "mina-al-ahmadi", "name": "Mina al-Ahmadi", "lat": 29.06, "lon": 48.17, "basin": "persian_gulf"}
-    ], "grades": ["kuwait_export"], "payment_risk": "low", "notes": "Transits Hormuz"},
-    {"id": "angola", "name": "Angola", "share_pct": 2, "export_terminals": [
-      {"id": "cabinda", "name": "Cabinda/Malongo", "lat": -5.55, "lon": 12.2, "basin": "west_africa"}
-    ], "grades": ["girassol", "cabinda"], "payment_risk": "medium", "notes": "Alternative sweet/medium supply"}
+    {
+      "id": "russia",
+      "name": "Russia",
+      "share_pct": 36,
+      "export_terminals": [
+        {
+          "id": "novorossiysk",
+          "name": "Novorossiysk",
+          "lat": 44.72,
+          "lon": 37.8,
+          "basin": "black_sea",
+          "grades": [
+            "urals"
+          ]
+        },
+        {
+          "id": "primorsk",
+          "name": "Primorsk",
+          "lat": 60.34,
+          "lon": 28.72,
+          "basin": "baltic",
+          "grades": [
+            "urals"
+          ]
+        },
+        {
+          "id": "kozmino",
+          "name": "Kozmino",
+          "lat": 42.74,
+          "lon": 133.04,
+          "basin": "pacific",
+          "grades": [
+            "espo"
+          ]
+        }
+      ],
+      "grades": [
+        "urals",
+        "espo"
+      ],
+      "payment_risk": "high (sanctions price-cap regime)",
+      "notes": "Share surged post-2022; cap/discount dynamics volatile"
+    },
+    {
+      "id": "iraq",
+      "name": "Iraq",
+      "share_pct": 19,
+      "export_terminals": [
+        {
+          "id": "basra",
+          "name": "Basra Oil Terminal",
+          "lat": 29.68,
+          "lon": 48.8,
+          "basin": "persian_gulf",
+          "grades": [
+            "basrah_medium",
+            "basrah_heavy"
+          ]
+        }
+      ],
+      "grades": [
+        "basrah_medium",
+        "basrah_heavy"
+      ],
+      "payment_risk": "low",
+      "notes": "Transits Hormuz"
+    },
+    {
+      "id": "saudi-arabia",
+      "name": "Saudi Arabia",
+      "share_pct": 13,
+      "export_terminals": [
+        {
+          "id": "ras-tanura",
+          "name": "Ras Tanura",
+          "lat": 26.64,
+          "lon": 50.16,
+          "basin": "persian_gulf",
+          "grades": [
+            "arab_light",
+            "arab_medium",
+            "arab_heavy"
+          ]
+        },
+        {
+          "id": "yanbu",
+          "name": "Yanbu",
+          "lat": 23.97,
+          "lon": 38.23,
+          "basin": "red_sea",
+          "grades": [
+            "arab_light",
+            "arab_medium",
+            "arab_heavy"
+          ]
+        }
+      ],
+      "grades": [
+        "arab_light",
+        "arab_medium",
+        "arab_heavy"
+      ],
+      "payment_risk": "low",
+      "notes": "Yanbu (Red Sea) partially bypasses Hormuz via East-West pipeline (~5 mb/d capacity)"
+    },
+    {
+      "id": "uae",
+      "name": "United Arab Emirates",
+      "share_pct": 8,
+      "export_terminals": [
+        {
+          "id": "fujairah",
+          "name": "Fujairah",
+          "lat": 25.18,
+          "lon": 56.35,
+          "basin": "gulf_of_oman",
+          "grades": [
+            "murban",
+            "das",
+            "upper_zakum"
+          ]
+        },
+        {
+          "id": "jebel-dhanna",
+          "name": "Jebel Dhanna",
+          "lat": 24.19,
+          "lon": 52.6,
+          "basin": "persian_gulf",
+          "grades": [
+            "murban",
+            "das",
+            "upper_zakum"
+          ]
+        }
+      ],
+      "grades": [
+        "murban",
+        "das",
+        "upper_zakum"
+      ],
+      "payment_risk": "low",
+      "notes": "Murban exports via Fujairah (ADCOP pipeline, ~1.5 mb/d) bypass Hormuz"
+    },
+    {
+      "id": "usa",
+      "name": "United States",
+      "share_pct": 5,
+      "export_terminals": [
+        {
+          "id": "corpus-christi",
+          "name": "Corpus Christi",
+          "lat": 27.8,
+          "lon": -97.05,
+          "basin": "us_gulf",
+          "grades": [
+            "wti_midland"
+          ]
+        },
+        {
+          "id": "houston",
+          "name": "Houston/Galveston",
+          "lat": 29.33,
+          "lon": -94.75,
+          "basin": "us_gulf",
+          "grades": [
+            "wti_midland",
+            "mars"
+          ]
+        }
+      ],
+      "grades": [
+        "wti_midland",
+        "mars"
+      ],
+      "payment_risk": "low",
+      "notes": "Long haul; freight-sensitive"
+    },
+    {
+      "id": "nigeria",
+      "name": "Nigeria",
+      "share_pct": 4,
+      "export_terminals": [
+        {
+          "id": "bonny",
+          "name": "Bonny",
+          "lat": 4.42,
+          "lon": 7.15,
+          "basin": "west_africa",
+          "grades": [
+            "bonny_light"
+          ]
+        },
+        {
+          "id": "qua-iboe",
+          "name": "Qua Iboe",
+          "lat": 4.33,
+          "lon": 8.0,
+          "basin": "west_africa",
+          "grades": [
+            "qua_iboe"
+          ]
+        }
+      ],
+      "grades": [
+        "bonny_light",
+        "qua_iboe"
+      ],
+      "payment_risk": "medium",
+      "notes": "Sweet grades; no chokepoint to India"
+    },
+    {
+      "id": "kuwait",
+      "name": "Kuwait",
+      "share_pct": 3,
+      "export_terminals": [
+        {
+          "id": "mina-al-ahmadi",
+          "name": "Mina al-Ahmadi",
+          "lat": 29.06,
+          "lon": 48.17,
+          "basin": "persian_gulf",
+          "grades": [
+            "kuwait_export"
+          ]
+        }
+      ],
+      "grades": [
+        "kuwait_export"
+      ],
+      "payment_risk": "low",
+      "notes": "Transits Hormuz"
+    },
+    {
+      "id": "angola",
+      "name": "Angola",
+      "share_pct": 2,
+      "export_terminals": [
+        {
+          "id": "cabinda",
+          "name": "Cabinda/Malongo",
+          "lat": -5.55,
+          "lon": 12.2,
+          "basin": "west_africa",
+          "grades": [
+            "girassol",
+            "cabinda"
+          ]
+        }
+      ],
+      "grades": [
+        "girassol",
+        "cabinda"
+      ],
+      "payment_risk": "medium",
+      "notes": "Alternative sweet/medium supply"
+    }
   ],
   "grades": {
-    "urals": {"name": "Urals", "api": 31.7, "sulfur_pct": 1.7, "family": "medium_sour", "benchmark_diff_usd": -12.0},
-    "espo": {"name": "ESPO Blend", "api": 34.8, "sulfur_pct": 0.62, "family": "light_sweet", "benchmark_diff_usd": -5.0},
-    "basrah_medium": {"name": "Basrah Medium", "api": 27.9, "sulfur_pct": 3.0, "family": "medium_sour", "benchmark_diff_usd": -4.5},
-    "basrah_heavy": {"name": "Basrah Heavy", "api": 23.7, "sulfur_pct": 4.1, "family": "heavy_sour", "benchmark_diff_usd": -7.5},
-    "arab_light": {"name": "Arab Light", "api": 33.0, "sulfur_pct": 1.8, "family": "medium_sour", "benchmark_diff_usd": -2.0},
-    "arab_medium": {"name": "Arab Medium", "api": 30.5, "sulfur_pct": 2.5, "family": "medium_sour", "benchmark_diff_usd": -4.0},
-    "arab_heavy": {"name": "Arab Heavy", "api": 27.5, "sulfur_pct": 2.9, "family": "heavy_sour", "benchmark_diff_usd": -6.0},
-    "murban": {"name": "Murban", "api": 40.2, "sulfur_pct": 0.79, "family": "light_sweet", "benchmark_diff_usd": 0.5},
-    "das": {"name": "Das", "api": 39.0, "sulfur_pct": 1.2, "family": "light_sweet", "benchmark_diff_usd": -0.5},
-    "upper_zakum": {"name": "Upper Zakum", "api": 33.9, "sulfur_pct": 1.8, "family": "medium_sour", "benchmark_diff_usd": -3.0},
-    "wti_midland": {"name": "WTI Midland", "api": 42.0, "sulfur_pct": 0.2, "family": "light_sweet", "benchmark_diff_usd": 1.0},
-    "mars": {"name": "Mars", "api": 29.5, "sulfur_pct": 1.9, "family": "medium_sour", "benchmark_diff_usd": -3.5},
-    "bonny_light": {"name": "Bonny Light", "api": 35.3, "sulfur_pct": 0.14, "family": "light_sweet", "benchmark_diff_usd": 1.5},
-    "qua_iboe": {"name": "Qua Iboe", "api": 36.0, "sulfur_pct": 0.13, "family": "light_sweet", "benchmark_diff_usd": 1.2},
-    "kuwait_export": {"name": "Kuwait Export", "api": 30.5, "sulfur_pct": 2.6, "family": "medium_sour", "benchmark_diff_usd": -5.0},
-    "girassol": {"name": "Girassol", "api": 31.4, "sulfur_pct": 0.33, "family": "medium_sweet", "benchmark_diff_usd": -1.0},
-    "cabinda": {"name": "Cabinda", "api": 32.0, "sulfur_pct": 0.17, "family": "medium_sweet", "benchmark_diff_usd": -1.5}
+    "urals": {
+      "name": "Urals",
+      "api": 31.7,
+      "sulfur_pct": 1.7,
+      "family": "medium_sour",
+      "benchmark_diff_usd": -12.0
+    },
+    "espo": {
+      "name": "ESPO Blend",
+      "api": 34.8,
+      "sulfur_pct": 0.62,
+      "family": "light_sweet",
+      "benchmark_diff_usd": -5.0
+    },
+    "basrah_medium": {
+      "name": "Basrah Medium",
+      "api": 27.9,
+      "sulfur_pct": 3.0,
+      "family": "medium_sour",
+      "benchmark_diff_usd": -4.5
+    },
+    "basrah_heavy": {
+      "name": "Basrah Heavy",
+      "api": 23.7,
+      "sulfur_pct": 4.1,
+      "family": "heavy_sour",
+      "benchmark_diff_usd": -7.5
+    },
+    "arab_light": {
+      "name": "Arab Light",
+      "api": 33.0,
+      "sulfur_pct": 1.8,
+      "family": "medium_sour",
+      "benchmark_diff_usd": -2.0
+    },
+    "arab_medium": {
+      "name": "Arab Medium",
+      "api": 30.5,
+      "sulfur_pct": 2.5,
+      "family": "medium_sour",
+      "benchmark_diff_usd": -4.0
+    },
+    "arab_heavy": {
+      "name": "Arab Heavy",
+      "api": 27.5,
+      "sulfur_pct": 2.9,
+      "family": "heavy_sour",
+      "benchmark_diff_usd": -6.0
+    },
+    "murban": {
+      "name": "Murban",
+      "api": 40.2,
+      "sulfur_pct": 0.79,
+      "family": "light_sweet",
+      "benchmark_diff_usd": 0.5
+    },
+    "das": {
+      "name": "Das",
+      "api": 39.0,
+      "sulfur_pct": 1.2,
+      "family": "light_sweet",
+      "benchmark_diff_usd": -0.5
+    },
+    "upper_zakum": {
+      "name": "Upper Zakum",
+      "api": 33.9,
+      "sulfur_pct": 1.8,
+      "family": "medium_sour",
+      "benchmark_diff_usd": -3.0
+    },
+    "wti_midland": {
+      "name": "WTI Midland",
+      "api": 42.0,
+      "sulfur_pct": 0.2,
+      "family": "light_sweet",
+      "benchmark_diff_usd": 1.0
+    },
+    "mars": {
+      "name": "Mars",
+      "api": 29.5,
+      "sulfur_pct": 1.9,
+      "family": "medium_sour",
+      "benchmark_diff_usd": -3.5
+    },
+    "bonny_light": {
+      "name": "Bonny Light",
+      "api": 35.3,
+      "sulfur_pct": 0.14,
+      "family": "light_sweet",
+      "benchmark_diff_usd": 1.5
+    },
+    "qua_iboe": {
+      "name": "Qua Iboe",
+      "api": 36.0,
+      "sulfur_pct": 0.13,
+      "family": "light_sweet",
+      "benchmark_diff_usd": 1.2
+    },
+    "kuwait_export": {
+      "name": "Kuwait Export",
+      "api": 30.5,
+      "sulfur_pct": 2.6,
+      "family": "medium_sour",
+      "benchmark_diff_usd": -5.0
+    },
+    "girassol": {
+      "name": "Girassol",
+      "api": 31.4,
+      "sulfur_pct": 0.33,
+      "family": "medium_sweet",
+      "benchmark_diff_usd": -1.0
+    },
+    "cabinda": {
+      "name": "Cabinda",
+      "api": 32.0,
+      "sulfur_pct": 0.17,
+      "family": "medium_sweet",
+      "benchmark_diff_usd": -1.5
+    }
   },
-  "grade_notes": "benchmark_diff_usd = indicative differential vs dated Brent (USD/bbl), rough recent-history placeholder — live differentials are estimated at runtime from price feeds where available, else these serve as assumption defaults (see assumptions.yaml)."
+  "grade_notes": "benchmark_diff_usd = indicative differential vs dated Brent (USD/bbl), rough recent-history placeholder \u2014 live differentials are estimated at runtime from price feeds where available, else these serve as assumption defaults (see assumptions.yaml)."
 }

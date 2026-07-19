@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .engines import news
-from .routers import assets, intel, risk
+from .routers import assets, intel, risk, scenario
 
 POLL_INTERVAL_S = 900  # GDELT refreshes every 15 min
 
@@ -39,6 +39,7 @@ app.add_middleware(
 app.include_router(assets.router, prefix="/api/assets", tags=["assets"])
 app.include_router(risk.router, prefix="/api/risk", tags=["risk"])
 app.include_router(intel.router, prefix="/api/intel", tags=["intel"])
+app.include_router(scenario.router, prefix="/api/scenario", tags=["scenario"])
 
 
 @app.get("/api/health")

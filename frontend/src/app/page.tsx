@@ -6,6 +6,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { PathLayer, ScatterplotLayer, TextLayer } from "deck.gl";
 import { api, BacktestRow, Chokepoint, CorridorRisk, IntelEvent, Port, Prices, Refinery, Route, SprSite } from "@/lib/api";
+import ScenarioConsole from "@/components/ScenarioConsole";
 
 const SEVERITY_STYLE: Record<string, string> = {
   rhetoric: "text-slate-400", incident: "text-amber-300",
@@ -308,6 +309,10 @@ export default function WarRoom() {
           )}
         </div>
       </aside>
+
+      <ScenarioConsole
+        chokepoints={chokepoints.filter((c) => c.daily_oil_flow_mbd).map((c) => ({ id: c.id, name: c.name }))}
+      />
 
       {/* Tooltip */}
       {hover && (

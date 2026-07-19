@@ -44,6 +44,27 @@ risk_engine:
 economics:
   usd_inr: {value: 87.0, note: "snapshot default; live feed overrides", confidence: refreshed_at_runtime}
   brent_default_usd: {value: 78.0, note: "fallback if price feed down", confidence: refreshed_at_runtime}
+  global_price_sensitivity_usd_per_mbd: {value: 6.0, note: "Short-run Brent rise per 1 mb/d of unresolved global supply loss", source: "consistent with 2019 Abqaiq (~5.7mb/d out, ~15% spike) order of magnitude", confidence: low}
+  retail_pass_through_inr_per_litre_per_usd: {value: 0.55, note: "Rs/litre retail impact per +$1/bbl sustained (at ~87 USDINR, full pass-through)", derivation: "1 bbl = 159 L; $1/bbl = 87 INR / 159 L = 0.547", confidence: high}
+
+inventory:
+  commercial_stock_days: {value: 20, note: "Refiner commercial crude inventories, days of processing", source: "industry norm for Indian refiners, approximate", confidence: medium}
+  min_stock_days_floor: {value: 7, note: "Operational floor below which refiners cut runs hard", confidence: medium}
+
+response:
+  reroute_ramp_days: {min: 15, mode: 25, max: 40, note: "Days for alternative-supplier cargoes to begin arriving at scale (triangular distribution)", confidence: low}
+  bypass_availability_pct: {min: 40, mode: 60, max: 80, note: "Share of Saudi E-W + ADCOP bypass capacity available to India-bound cargoes (triangular)", confidence: low}
+  war_risk_premium_usd_bbl: {value: 3.0, note: "Freight + insurance premium per bbl on crisis-adjacent routes", confidence: low}
+  supplier_spare_capacity_mbd:
+    saudi-arabia: {value: 1.2, note: "usable spare reachable via Yanbu/Red Sea during Hormuz closure"}
+    uae: {value: 0.5, note: "ADCOP to Fujairah, outside Hormuz"}
+    usa: {value: 0.8}
+    nigeria: {value: 0.3}
+    angola: {value: 0.2}
+    kuwait: {value: 0.0, note: "no Hormuz bypass"}
+    iraq: {value: 0.0, note: "no Hormuz bypass"}
+    russia: {value: 0.4, note: "ESPO via Kozmino + discounted Urals"}
+    note: "Incremental mb/d each supplier could realistically add for India within weeks, given the shock; expert-judgment, editable"
 
 # Confidence legend: high = published hard data; medium = published estimate ranges;
 # low = order-of-magnitude expert judgment (flagged in UI); design_choice = tunable knob.
