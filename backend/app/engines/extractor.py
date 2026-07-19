@@ -61,38 +61,40 @@ def _extract_rules(text: str) -> dict | None:
 
 
 # --- LLM providers (each raises on failure; the chain catches) ---------------
-def _call_gemini(prompt: str) -> str:
+def _call_gemini(prompt: str, json_mode: bool = True) -> str:
     key = os.environ["GEMINI_API_KEY"]
     # "-latest" alias: named generations (2.0/2.5-flash) get closed to new accounts
     # as they age; the alias always resolves to the current free-tier flash model.
     model = os.environ.get("GEMINI_MODEL", "gemini-flash-latest")
+    cfg: dict = {"temperature": 0.0}
+    if json_mode:
+        cfg["responseMimeType"] = "application/json"
     r = httpx.post(
         f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
         params={"key": key},
-        json={"contents": [{"parts": [{"text": prompt}]}],
-              "generationConfig": {"temperature": 0.0, "responseMimeType": "application/json"}},
-        timeout=30,
+        json={"contents": [{"parts": [{"text": prompt}]}], "generationConfig": cfg},
+        timeout=45,
     )
     r.raise_for_status()
     return r.json()["candidates"][0]["content"]["parts"][0]["text"]
 
 
-def _call_groq(prompt: str) -> str:
+def _call_groq(prompt: str, json_mode: bool = True) -> str:
     key = os.environ["GROQ_API_KEY"]
     model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+    body = {"model": model, "temperature": 0.0,
+            "messages": [{"role": "user", "content": prompt}]}
+    if json_mode:
+        body["response_format"] = {"type": "json_object"}
     r = httpx.post(
         "https://api.groq.com/openai/v1/chat/completions",
-        headers={"Authorization": f"Bearer {key}"},
-        json={"model": model, "temperature": 0.0,
-              "response_format": {"type": "json_object"},
-              "messages": [{"role": "user", "content": prompt}]},
-        timeout=30,
+        headers={"Authorization": f"Bearer {key}"}, json=body, timeout=45,
     )
     r.raise_for_status()
     return r.json()["choices"][0]["message"]["content"]
 
 
-def _call_anthropic(prompt: str) -> str:
+def _call_anthropic(prompt: str, json_mode: bool = True) -> str:
     import anthropic
 
     client = anthropic.Anthropic()
@@ -114,14 +116,15 @@ def provider() -> str:
     return "rules"
 
 
-def llm_complete(prompt: str) -> tuple[str, str] | None:
+def llm_complete(prompt: str, json_mode: bool = True) -> tuple[str, str] | None:
     """Try each configured provider in order. Returns (text, provider) or None.
-    A 429 / outage on one provider falls through to the next — free-tier resilience."""
+    A 429 / outage on one provider falls through to the next — free-tier resilience.
+    json_mode=False for prose outputs (briefings); True for structured extraction."""
     for name, env, fn in _CHAIN:
         if not os.environ.get(env):
             continue
         try:
-            return fn(prompt), name
+            return fn(prompt, json_mode=json_mode), name
         except Exception:
             continue
     return None

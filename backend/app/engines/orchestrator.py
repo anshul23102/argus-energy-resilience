@@ -51,7 +51,8 @@ def _briefing_llm(ctx: dict) -> tuple[str, str] | None:
         "10-line situation briefing for the Petroleum Ministry from this JSON. Use concrete "
         "numbers. No preamble, no markdown headers.\n" + _json.dumps(ctx, default=str)[:6000]
     )
-    return llm_complete(prompt)  # tries gemini -> groq -> anthropic; None if no keys
+    # prose mode: forcing JSON here is how you get a briefing that reads like a payload
+    return llm_complete(prompt, json_mode=False)
 
 
 def respond(chokepoint_id: str, closure_pct: float = 60.0, duration_days: int = 21,
