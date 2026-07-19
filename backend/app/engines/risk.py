@@ -39,7 +39,10 @@ class RiskEngine:
         return [e for e in self._events if corridor is None or e.corridor == corridor]
 
     # -- scoring ----------------------------------------------------------
-    def corridor_risk(self, chokepoint_id: str, horizon_days: int = 30) -> dict:
+    def corridor_risk(self, chokepoint_id: str, horizon_days: int = 30,
+                      now_ts: float | None = None) -> dict:
+        """Score a corridor. `now_ts` lets the backtest evaluate 'as of' a past
+        day — evidence after that instant is ignored (no look-ahead)."""
         a = data.assumptions()["risk_engine"]
         prior_key = f"base_hazard_{chokepoint_id.replace('-', '')}_annual_pct"
         # fall back: unlisted routing points get a nominal 0.5%/yr
@@ -59,9 +62,11 @@ class RiskEngine:
         ratios = a["severity_likelihood_ratios"]
         odds = p0 / (1 - p0)
         drivers = []
-        now = time.time()
+        now = now_ts if now_ts is not None else time.time()
         for e in self.events(chokepoint_id):
             age_days = (now - e.timestamp) / 86400.0
+            if age_days < 0:
+                continue  # event is in this evaluation instant's future — invisible
             decay = 0.5 ** (age_days / halflife)
             lr = ratios.get(e.severity, 1.0)
             effective_lr = 1.0 + (lr - 1.0) * decay * min(e.corroborations, 3) / 3.0

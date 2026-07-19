@@ -5,7 +5,12 @@ import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { PathLayer, ScatterplotLayer, TextLayer } from "deck.gl";
-import { api, Chokepoint, CorridorRisk, Port, Refinery, Route, SprSite } from "@/lib/api";
+import { api, BacktestRow, Chokepoint, CorridorRisk, IntelEvent, Port, Prices, Refinery, Route, SprSite } from "@/lib/api";
+
+const SEVERITY_STYLE: Record<string, string> = {
+  rhetoric: "text-slate-400", incident: "text-amber-300",
+  attack: "text-red-400", partial_closure: "text-red-300", full_closure: "text-red-200",
+};
 
 const RISK_COLORS: Record<string, [number, number, number]> = {
   low: [52, 211, 153],      // emerald
@@ -31,6 +36,21 @@ export default function WarRoom() {
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
   const [clock, setClock] = useState<string>("");
   const [apiDown, setApiDown] = useState(false);
+  const [prices, setPrices] = useState<Prices | null>(null);
+  const [intel, setIntel] = useState<IntelEvent[]>([]);
+  const [backtests, setBacktests] = useState<BacktestRow[]>([]);
+
+  useEffect(() => {
+    const load = () => {
+      api.prices().then(setPrices).catch(() => {});
+      api.events().then(setIntel).catch(() => {});
+      api.corridorRisk().then(setRisk).catch(() => {});
+    };
+    load();
+    const t = setInterval(load, 60_000);
+    api.backtests().then(setBacktests).catch(() => {});
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     const t = setInterval(() => setClock(new Date().toISOString().slice(0, 19).replace("T", " ") + "Z"), 1000);
@@ -154,6 +174,24 @@ export default function WarRoom() {
           <span className="text-[11px] text-slate-500">ENERGY SUPPLY CHAIN INTELLIGENCE · INDIA CRUDE NETWORK</span>
         </div>
         <div className="flex items-center gap-6 text-[11px]">
+          {prices && (
+            <span className="flex gap-4">
+              {(["brent", "wti", "usd_inr"] as const).map((k) => {
+                const q = prices[k];
+                const up = q.change_pct >= 0;
+                return (
+                  <span key={k} className="text-slate-300">
+                    <span className="text-slate-500">{k === "usd_inr" ? "USD/INR" : k.toUpperCase()}</span>{" "}
+                    {q.price.toFixed(2)}{" "}
+                    <span className={up ? "text-red-400" : "text-emerald-400"}>
+                      {up ? "▲" : "▼"}{Math.abs(q.change_pct).toFixed(1)}%
+                    </span>
+                    {q.stale && <span className="text-amber-500"> ⚠stale</span>}
+                  </span>
+                );
+              })}
+            </span>
+          )}
           <span className="text-slate-500">KG {graphStats}</span>
           <span className="text-slate-400">{clock}</span>
           <span className={`rounded px-2 py-0.5 ${apiDown ? "bg-red-900 text-red-200" : "bg-emerald-900/60 text-emerald-300"}`}>
@@ -218,6 +256,58 @@ export default function WarRoom() {
       <div className="absolute inset-0">
         <div ref={mapDiv} className="h-full w-full" />
       </div>
+
+      {/* Right rail: live intel + validation */}
+      <aside className="absolute right-0 top-12 bottom-0 z-10 flex w-96 flex-col gap-3 overflow-y-auto border-l border-slate-800 bg-[#0a0f1a]/85 p-4 backdrop-blur">
+        <div>
+          <h2 className="mb-2 text-[11px] tracking-[0.25em] text-slate-500">
+            LIVE INTEL FEED <span className="text-slate-600">· GDELT 15-MIN</span>
+          </h2>
+          {intel.length === 0 && (
+            <div className="rounded border border-slate-800 bg-slate-900/50 p-3 text-[11px] text-slate-500">
+              No corroborated signals in window. Watching.
+            </div>
+          )}
+          {intel.slice(0, 8).map((e, i) => (
+            <div key={i} className="mb-2 rounded border border-slate-800 bg-slate-900/50 p-2.5">
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="uppercase tracking-wider text-slate-500">{e.corridor}</span>
+                <span>
+                  {e.corroborations > 1 && (
+                    <span className="mr-2 rounded bg-slate-800 px-1 text-slate-400">×{e.corroborations} sources</span>
+                  )}
+                  <span className={`uppercase ${SEVERITY_STYLE[e.severity] ?? "text-slate-400"}`}>{e.severity}</span>
+                </span>
+              </div>
+              <div className="mt-1 text-[11px] leading-snug text-slate-300">{e.summary}</div>
+              <div className="mt-1 text-[10px] text-slate-600">{e.source}</div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-auto">
+          <h2 className="mb-2 text-[11px] tracking-[0.25em] text-slate-500">
+            ENGINE VALIDATION <span className="text-slate-600">· HISTORICAL REPLAY</span>
+          </h2>
+          {backtests.map((b) => (
+            <div key={b.id} className="mb-2 rounded border border-slate-800 bg-slate-900/50 p-2.5">
+              <div className="text-[11px] text-slate-300">{b.name}</div>
+              <div className="mt-1 flex items-center justify-between text-[10px] text-slate-500">
+                <span>alert {b.alert_date ?? "—"} → impact {b.peak_impact_date}</span>
+                <span className={`font-bold ${(b.lead_time_days ?? 0) > 0 ? "text-emerald-400" : "text-amber-400"}`}>
+                  {b.lead_time_days != null ? `+${b.lead_time_days}d lead` : "no alert"}
+                </span>
+              </div>
+            </div>
+          ))}
+          {backtests.length > 0 && (
+            <div className="text-[10px] leading-relaxed text-slate-600">
+              Same Bayesian engine as live scoring, replayed over real 2019–24 crises.
+              Calibrated on 2019, validated out-of-sample on 2023–24. No look-ahead.
+            </div>
+          )}
+        </div>
+      </aside>
 
       {/* Tooltip */}
       {hover && (

@@ -27,7 +27,15 @@ export interface CorridorRisk {
   drivers: { summary: string; severity: string; source: string; age_days: number; likelihood_ratio_applied: number }[];
 }
 
+export interface Quote { price: number; change_pct: number; stale: boolean; }
+export interface Prices { as_of: number; brent: Quote; wti: Quote; usd_inr: Quote; }
+export interface IntelEvent { corridor: string; severity: string; summary: string; source: string; timestamp: number; corroborations: number; }
+export interface BacktestRow { id: string; name: string; corridor: string; alert_date: string | null; peak_impact_date: string; lead_time_days: number | null; }
+
 export const api = {
+  prices: () => get<Prices>("/api/intel/prices"),
+  events: () => get<IntelEvent[]>("/api/intel/events"),
+  backtests: () => get<BacktestRow[]>("/api/intel/backtest"),
   refineries: () => get<Refinery[]>("/api/assets/refineries"),
   ports: () => get<Port[]>("/api/assets/ports"),
   spr: () => get<SprSite[]>("/api/assets/spr"),

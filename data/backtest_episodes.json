@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "description": "Historical crisis episodes used to backtest the risk engine. Every event is a real, publicly documented incident with its actual date. The backtest replays these events through the SAME Bayesian engine used live, then compares the risk trajectory against actual Brent prices for the window.",
+    "method": "Events are fed to the engine on their historical dates. Lead time = days between the engine's risk score crossing the alert threshold and the episode's peak price impact date.",
+    "sources": ["Widely reported incidents (Reuters/AP/BBC coverage 2019-2024); dates are matters of public record"]
+  },
+  "episodes": [
+    {
+      "id": "hormuz-2019",
+      "name": "Gulf Tanker Crisis → Abqaiq Attack (2019)",
+      "corridor": "hormuz",
+      "window_start": "2019-04-15",
+      "window_end": "2019-10-15",
+      "peak_impact_date": "2019-09-16",
+      "peak_impact_note": "Abqaiq-Khurais drone attack knocked out ~5.7 mb/d of Saudi processing; Brent jumped ~15% on 16 Sep 2019 — largest single-day rise since 1991.",
+      "events": [
+        {"date": "2019-04-22", "severity": "rhetoric", "summary": "US ends Iran oil sanction waivers; Iran threatens to close Strait of Hormuz"},
+        {"date": "2019-05-12", "severity": "attack", "summary": "Four tankers sabotaged off Fujairah anchorage (limpet mines)"},
+        {"date": "2019-05-14", "severity": "attack", "summary": "Houthi drones strike Saudi East-West pipeline pump stations"},
+        {"date": "2019-06-13", "severity": "attack", "summary": "Front Altair and Kokuka Courageous attacked in Gulf of Oman"},
+        {"date": "2019-06-20", "severity": "incident", "summary": "Iran shoots down US RQ-4 surveillance drone over Strait of Hormuz"},
+        {"date": "2019-07-19", "severity": "attack", "summary": "IRGC seizes British-flagged tanker Stena Impero in Hormuz"},
+        {"date": "2019-09-14", "severity": "attack", "summary": "Drone/cruise-missile attack on Abqaiq processing facility and Khurais field"}
+      ]
+    },
+    {
+      "id": "redsea-2023",
+      "name": "Red Sea Shipping Crisis (2023-24)",
+      "corridor": "bab-el-mandeb",
+      "window_start": "2023-10-01",
+      "window_end": "2024-02-15",
+      "peak_impact_date": "2023-12-18",
+      "peak_impact_note": "By 18 Dec 2023, Maersk, Hapag-Lloyd, MSC, CMA CGM and BP had suspended Red Sea transits; mass rerouting via Cape of Good Hope added 10-14 days and spiked freight/war-risk premiums.",
+      "events": [
+        {"date": "2023-10-19", "severity": "incident", "summary": "USS Carney intercepts Houthi missiles/drones over southern Red Sea"},
+        {"date": "2023-11-19", "severity": "attack", "summary": "Houthis hijack car carrier Galaxy Leader in southern Red Sea"},
+        {"date": "2023-12-03", "severity": "attack", "summary": "Three commercial vessels attacked in Bab el-Mandeb approaches"},
+        {"date": "2023-12-12", "severity": "attack", "summary": "Tanker Strinda struck by Houthi cruise missile near Bab el-Mandeb"},
+        {"date": "2023-12-15", "severity": "partial_closure", "summary": "Maersk and Hapag-Lloyd suspend all Red Sea transits after Al Jasrah hit"},
+        {"date": "2023-12-18", "severity": "partial_closure", "summary": "BP pauses all Red Sea oil shipments; major carriers reroute via Cape"},
+        {"date": "2024-01-12", "severity": "attack", "summary": "US/UK strikes on Houthi targets; Houthis vow to widen attacks on shipping"}
+      ]
+    },
+    {
+      "id": "hormuz-2024",
+      "name": "Iran-Israel Direct Escalation (Apr 2024)",
+      "corridor": "hormuz",
+      "window_start": "2024-03-15",
+      "window_end": "2024-05-15",
+      "peak_impact_date": "2024-04-15",
+      "peak_impact_note": "IRGC seized MSC Aries near Hormuz on 13 Apr; Iran launched direct missile/drone attack on Israel 13-14 Apr. Brent had risen ~10% from mid-March into the mid-$90s on escalation risk before de-escalating.",
+      "events": [
+        {"date": "2024-04-01", "severity": "attack", "summary": "Strike on Iranian consulate in Damascus kills IRGC commanders; Iran vows retaliation"},
+        {"date": "2024-04-10", "severity": "rhetoric", "summary": "Iran threatens to close Strait of Hormuz amid retaliation warnings"},
+        {"date": "2024-04-13", "severity": "attack", "summary": "IRGC commandos seize MSC Aries container ship near Strait of Hormuz"},
+        {"date": "2024-04-13", "severity": "attack", "summary": "Iran launches 300+ drones/missiles at Israel in first direct attack"},
+        {"date": "2024-04-19", "severity": "incident", "summary": "Reported Israeli strike near Isfahan; regional shipping on high alert"}
+      ]
+    }
+  ]
+}
