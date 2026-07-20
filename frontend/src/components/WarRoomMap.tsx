@@ -139,20 +139,67 @@ export default function WarRoomMap({
       }
     });
 
-    // deck.gl-mapbox's overlay canvas defaults to pointer-events:none, which
-    // silently blocks every hover/click on pickable layers for real users.
-    const deckCanvas = mapDiv.current.querySelector<HTMLCanvasElement>("#deckgl-overlay");
-    if (deckCanvas) deckCanvas.style.pointerEvents = "auto";
-
-    const ro = new ResizeObserver(() => map.resize());
+    // luma.gl is meant to own drawing-buffer sizing for deck's overlay canvas via
+    // its own resize observation, but in practice that canvas's pixel-buffer
+    // attributes (canvas.width/height, the actual WebGL resolution) can get stuck
+    // at the browser's 300x150 default while its CSS box correctly fills the
+    // container — visually the map looks fine (the buffer is just upscaled), but
+    // every deck.gl pick/hover coordinate is computed against that tiny stale
+    // buffer, so it silently resolves to the wrong object everywhere off the top
+    // left corner. Force both canvases' real pixel buffers to track the actual
+    // container size directly, rather than trusting the libraries' own observers.
+    const syncCanvasBuffers = () => {
+      if (!mapDiv.current) return;
+      map.resize();
+      const dpr = window.devicePixelRatio || 1;
+      const rect = mapDiv.current.getBoundingClientRect();
+      const deckCanvas = mapDiv.current.querySelector<HTMLCanvasElement>("#deckgl-overlay");
+      if (!deckCanvas) return;
+      const w = Math.round(rect.width * dpr), h = Math.round(rect.height * dpr);
+      if (deckCanvas.width === w && deckCanvas.height === h) return;
+      deckCanvas.width = w;
+      deckCanvas.height = h;
+      // Setting the canvas's own width/height attributes doesn't notify deck: its
+      // luma.gl canvas context caches its own CSS/device-pixel size from a resize
+      // observer that, in this overlay-control setup, never fires again after the
+      // first (pre-layout) measurement. Deck's picking math runs entirely off that
+      // stale cache, so without this every hover/click resolves against a
+      // phantom 300x150 buffer regardless of what's actually visible on screen.
+      // Reach into deck's internals directly to force the cache current — private
+      // API, guarded so a future deck.gl version that removes it fails silently
+      // rather than crashing the map.
+      type InternalCanvasContext = {
+        cssWidth: number; cssHeight: number;
+        devicePixelWidth: number; devicePixelHeight: number; devicePixelRatio: number;
+      };
+      type InternalDeck = { _canvasContext?: InternalCanvasContext; _updateCanvasSize?: () => void };
+      const deck = (overlayRef.current as unknown as { _deck?: InternalDeck })?._deck;
+      const ctx = deck?._canvasContext;
+      if (ctx) {
+        ctx.cssWidth = rect.width;
+        ctx.cssHeight = rect.height;
+        ctx.devicePixelWidth = w;
+        ctx.devicePixelHeight = h;
+        ctx.devicePixelRatio = dpr;
+      }
+      deck?._updateCanvasSize?.();
+    };
+    const ro = new ResizeObserver(syncCanvasBuffers);
     ro.observe(mapDiv.current);
+    map.once("idle", syncCanvasBuffers);
+    // Layout can still settle a frame or two after mount even once the map
+    // reports idle; re-check shortly after as a final safety net.
+    const settleTimer = setTimeout(syncCanvasBuffers, 500);
     map.on("error", (e) => console.error("maplibre:", e.error?.message ?? e));
 
     if (interactive) {
       map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), "bottom-right");
     }
 
-    return () => { ro.disconnect(); map.remove(); mapRef.current = null; overlayRef.current = null; };
+    return () => {
+      clearTimeout(settleTimer); ro.disconnect(); map.remove();
+      mapRef.current = null; overlayRef.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
