@@ -1,57 +1,94 @@
 @import "tailwindcss";
 
-/* ARGUS design tokens — terminal-native dark, one committed accent.
-   Two neutral layers: map field (bg) vs panels (surface). OKLCH throughout. */
+/* ARGUS design tokens. Dark control-room palette, OKLCH throughout.
+   One committed accent (amber) reserved for actions, selection and emphasis.
+   Semantic risk colors reserved strictly for risk state, never decoration. */
 :root {
-  --bg: oklch(0.17 0.02 250);            /* map field / page */
-  --surface: oklch(0.21 0.022 252);      /* panels, rails */
-  --surface-2: oklch(0.25 0.024 252);    /* raised: inputs, hover */
-  --hairline: oklch(0.32 0.02 250);
-  --ink: oklch(0.93 0.008 250);
-  --ink-2: oklch(0.72 0.015 250);        /* secondary text */
-  --ink-3: oklch(0.55 0.018 250);        /* tertiary: meta, units */
-  --accent: oklch(0.8 0.16 75);          /* signal amber — actions & selection only */
-  --risk-low: oklch(0.78 0.14 165);
-  --risk-elevated: oklch(0.8 0.15 85);
-  --risk-high: oklch(0.68 0.19 25);
-  --live: oklch(0.78 0.14 165);
+  --bg: oklch(0.15 0.018 252);            /* app background */
+  --surface: oklch(0.19 0.02 252);        /* panels, nav, cards */
+  --surface-2: oklch(0.235 0.022 252);    /* raised: inputs, hover, nested cards */
+  --surface-3: oklch(0.28 0.024 252);     /* active / pressed */
+  --hairline: oklch(0.3 0.018 250);
+  --hairline-strong: oklch(0.38 0.02 250);
+  --ink: oklch(0.95 0.006 250);
+  --ink-2: oklch(0.78 0.012 250);         /* secondary text */
+  --ink-3: oklch(0.58 0.015 250);         /* tertiary: meta, units, captions */
+  --accent: oklch(0.79 0.15 72);          /* signal amber */
+  --accent-ink: oklch(0.18 0.02 72);      /* text on accent fill */
+  --risk-low: oklch(0.76 0.13 162);
+  --risk-elevated: oklch(0.79 0.14 82);
+  --risk-high: oklch(0.66 0.18 24);
+  --live: oklch(0.76 0.13 162);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
 }
 
 @theme inline {
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
   --color-hairline: var(--hairline);
+  --color-hairline-strong: var(--hairline-strong);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
   --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
   --color-risk-low: var(--risk-low);
   --color-risk-elevated: var(--risk-elevated);
   --color-risk-high: var(--risk-high);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-mono-data);
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  font-family: var(--font-inter), -apple-system, "Segoe UI", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* data figures: mono + tabular, the terminal's voice */
+h1, h2, h3 {
+  text-wrap: balance;
+}
+p, li {
+  text-wrap: pretty;
+}
+
+/* Reserved strictly for genuinely tabular data: prices, percentages, counts,
+   coordinates, dates in data rows. Never for headings, labels or prose. */
 .figure {
-  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-family: var(--font-mono-data), ui-monospace, monospace;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }
 
-/* panel title: the one tracked-caps style we allow ourselves */
-.panel-title {
-  font-size: 0.6875rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+.section-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  letter-spacing: -0.01em;
+}
+
+.caption {
+  font-size: 0.75rem;
   color: var(--ink-3);
-  font-weight: 500;
+  line-height: 1.5;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
+}
+
+.card-raised {
+  background: var(--surface-2);
+  border: 1px solid var(--hairline);
+  border-radius: var(--radius-md);
 }
 
 .live-dot {
@@ -62,7 +99,13 @@ body {
   70% { box-shadow: 0 0 0 6px transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--hairline-strong); border-radius: 8px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-3); }
+
 @media (prefers-reduced-motion: reduce) {
   .live-dot { animation: none; }
-  * { transition-duration: 0.01ms !important; }
+  * { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
