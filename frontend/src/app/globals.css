@@ -2,7 +2,11 @@
 
 /* ARGUS design tokens. Dark control-room palette, OKLCH throughout.
    One committed accent (amber) reserved for actions, selection and emphasis.
-   Semantic risk colors reserved strictly for risk state, never decoration. */
+   Semantic risk colors reserved strictly for risk state, never decoration.
+
+   Layout language: hairlines and space, not stacked boxes. A bordered card
+   is used only where it's functionally honest (a clickable row, a form
+   control group, a real data table) — never as generic content wrapping. */
 :root {
   --bg: oklch(0.15 0.018 252);            /* app background */
   --surface: oklch(0.19 0.02 252);        /* panels, nav, cards */
@@ -40,6 +44,7 @@
   --color-risk-elevated: var(--risk-elevated);
   --color-risk-high: var(--risk-high);
   --font-sans: var(--font-inter);
+  --font-display: var(--font-display);
   --font-mono: var(--font-mono-data);
 }
 
@@ -47,12 +52,18 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-inter), -apple-system, "Segoe UI", system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3 {
+h1, h2, h3, h4 {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   text-wrap: balance;
+  color: var(--ink);
 }
 p, li {
   text-wrap: pretty;
@@ -66,19 +77,64 @@ p, li {
   font-feature-settings: "tnum" 1;
 }
 
+/* Page title, sits at the top of every route. */
+.page-title {
+  font-size: 1.75rem;
+  line-height: 1.15;
+}
+
+/* Section heading within a page. */
+.section-title {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
 .section-label {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--ink-2);
   letter-spacing: -0.01em;
 }
 
 .caption {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--ink-3);
   line-height: 1.5;
 }
 
+/* The big-number treatment: a stat sits directly on the canvas, no border,
+   no background. Separation comes from type weight and space, not a box. */
+.stat-value {
+  font-family: var(--font-display), var(--font-inter), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Default way to separate content blocks: a single rule, not a box. */
+.hairline-section {
+  border-bottom: 1px solid var(--hairline);
+}
+.hairline-section:last-child {
+  border-bottom: none;
+}
+
+/* Translucent floating panel — for anything that must sit over the map.
+   Blends into the scene rather than competing with it as an opaque box. */
+.panel-glass {
+  background: color-mix(in oklch, var(--surface) 78%, transparent);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid color-mix(in oklch, var(--hairline-strong) 70%, transparent);
+  border-radius: var(--radius-md);
+}
+
+/* Real bordered card — used only where a box is functionally honest:
+   clickable rows, form control groups, tables. Not generic wrapping. */
 .card {
   background: var(--surface);
   border: 1px solid var(--hairline);

@@ -40,11 +40,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-full w-full bg-bg text-ink">
       {/* Left nav rail */}
-      <nav className="flex w-[76px] shrink-0 flex-col items-center border-r border-hairline bg-surface py-4">
-        <Link href="/" className="mb-6 text-[13px] font-bold tracking-[0.16em] text-accent">
+      <nav className="flex w-[80px] shrink-0 flex-col items-center border-r border-hairline bg-surface py-5">
+        <Link href="/" className="mb-7 font-display text-[15px] font-bold tracking-[0.14em] text-accent">
           AR<span className="block text-center">GUS</span>
         </Link>
-        <div className="flex flex-1 flex-col items-center gap-1">
+        <div className="flex flex-1 flex-col items-center gap-1.5">
           {NAV_ITEMS.map((item) => {
             const Icon = ICONS[item.href];
             const active = pathname === item.href;
@@ -53,13 +53,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 title={item.description}
-                className={`group relative flex h-12 w-12 flex-col items-center justify-center gap-1 rounded-lg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-accent ${
+                className={`group relative flex h-13 w-13 flex-col items-center justify-center gap-1 rounded-lg transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-accent ${
                   active ? "bg-accent/12 text-accent" : "text-ink-3 hover:bg-surface-2 hover:text-ink-2"
                 }`}
               >
                 {active && <span className="absolute left-0 h-6 w-[3px] rounded-r bg-accent" style={{ left: -12 }} />}
-                <Icon size={18} strokeWidth={1.75} />
-                <span className="text-[9px] leading-none">{item.label.split(" ")[0]}</span>
+                <Icon size={19} strokeWidth={1.75} />
+                <span className="text-[10px] leading-none">{item.label.split(" ")[0]}</span>
               </Link>
             );
           })}
@@ -68,15 +68,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       {/* Main column */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-hairline bg-surface/80 px-6 backdrop-blur">
+        <header className="flex h-[68px] shrink-0 items-center justify-between border-b border-hairline bg-surface/80 px-7 backdrop-blur">
           <div>
-            <h1 className="text-[14px] font-semibold text-ink">{current?.label ?? "ARGUS"}</h1>
-            {current && <p className="text-[11px] text-ink-3">{current.description}</p>}
+            <h1 className="section-title">{current?.label ?? "ARGUS"}</h1>
+            {current && <p className="caption mt-0.5">{current.description}</p>}
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-7">
             <PriceTicker />
-            <span className="figure hidden text-[11px] text-ink-3 xl:inline">{clock}</span>
-            <span className="flex items-center gap-1.5 text-[11px]">
+            <span className="figure hidden text-[13px] text-ink-3 xl:inline">{clock}</span>
+            <span className="flex items-center gap-2 text-[13px]">
               <span className={`live-dot h-1.5 w-1.5 rounded-full ${apiDown ? "bg-risk-high" : "bg-risk-low"}`} />
               <span className={apiDown ? "text-risk-high" : "text-risk-low"}>{apiDown ? "Offline" : "Live"}</span>
             </span>
