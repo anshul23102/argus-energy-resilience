@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -55,6 +55,15 @@ export default function ScenarioConsole({ chokepoints }: { chokepoints: { id: st
   const [res, setRes] = useState<Response | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  // assumptions edited in the side panel → transparently re-run the shown scenario
+  const hasResult = useRef(false);
+  useEffect(() => {
+    const rerun = () => { if (hasResult.current) run(); };
+    window.addEventListener("argus:assumptions-changed", rerun);
+    return () => window.removeEventListener("argus:assumptions-changed", rerun);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cp, closure, duration]);
+
   const run = async () => {
     setRunning(true); setErr(null);
     try {
@@ -65,6 +74,7 @@ export default function ScenarioConsole({ chokepoints }: { chokepoints: { id: st
       });
       if (!r.ok) throw new Error(`${r.status}`);
       setRes(await r.json());
+      hasResult.current = true;
     } catch (e) {
       setErr(String(e));
     } finally {
@@ -79,47 +89,47 @@ export default function ScenarioConsole({ chokepoints }: { chokepoints: { id: st
     <>
       <button
         onClick={() => setOpen(!open)}
-        className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded border border-amber-500/40 bg-[#0a0f1a]/95 px-5 py-2 text-[12px] tracking-[0.2em] text-amber-400 backdrop-blur hover:bg-amber-500/10"
+        className="absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded border border-accent/40 bg-surface/95 px-5 py-2 text-[12px] tracking-[0.14em] text-accent backdrop-blur transition-colors duration-150 hover:bg-accent/10 focus-visible:outline-2 focus-visible:outline-accent"
       >
         {open ? "▼ CLOSE SCENARIO CONSOLE" : "▲ SCENARIO CONSOLE — WHAT IF?"}
       </button>
 
       {open && (
-        <div className="absolute bottom-16 left-1/2 z-20 max-h-[72vh] w-[880px] max-w-[92vw] -translate-x-1/2 overflow-y-auto rounded border border-slate-700 bg-[#0a0f1a]/97 p-4 backdrop-blur">
+        <div className="absolute bottom-16 left-1/2 z-20 max-h-[72vh] w-[880px] max-w-[92vw] -translate-x-1/2 overflow-y-auto rounded border border-hairline bg-surface/97 p-4 shadow-2xl backdrop-blur">
           {/* controls */}
-          <div className="flex flex-wrap items-end gap-4 border-b border-slate-800 pb-3">
-            <label className="text-[10px] text-slate-500">
+          <div className="flex flex-wrap items-end gap-4 border-b border-hairline pb-3">
+            <label className="panel-title">
               CHOKEPOINT
               <select value={cp} onChange={(e) => setCp(e.target.value)}
-                className="mt-1 block rounded border border-slate-700 bg-slate-900 px-2 py-1 text-[12px] text-slate-200">
+                className="mt-1 block rounded border border-hairline bg-bg px-2 py-1 text-[12px] text-ink focus:border-accent focus:outline-none">
                 {chokepoints.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </label>
-            <label className="text-[10px] text-slate-500">
+            <label className="panel-title">
               CLOSURE {closure}%
               <input type="range" min={10} max={100} step={5} value={closure}
-                onChange={(e) => setClosure(+e.target.value)} className="mt-2 block w-40 accent-amber-400" />
+                onChange={(e) => setClosure(+e.target.value)} className="mt-2 block w-40 accent-[color:var(--accent)]" />
             </label>
-            <label className="text-[10px] text-slate-500">
+            <label className="panel-title">
               MEAN DURATION {duration}d
               <input type="range" min={7} max={60} step={1} value={duration}
-                onChange={(e) => setDuration(+e.target.value)} className="mt-2 block w-40 accent-amber-400" />
+                onChange={(e) => setDuration(+e.target.value)} className="mt-2 block w-40 accent-[color:var(--accent)]" />
             </label>
             <button onClick={run} disabled={running}
-              className="ml-auto rounded bg-amber-500 px-5 py-1.5 text-[12px] font-bold tracking-wider text-black hover:bg-amber-400 disabled:opacity-40">
+              className="ml-auto rounded bg-accent px-5 py-1.5 text-[12px] font-semibold tracking-wide text-[oklch(0.2_0.02_250)] transition-colors duration-150 hover:brightness-110 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
               {running ? "SIMULATING…" : "RUN RESPONSE"}
             </button>
           </div>
 
-          {err && <div className="mt-3 text-[11px] text-red-400">backend error: {err}</div>}
+          {err && <div className="mt-3 text-[11px] text-risk-high">backend error: {err}</div>}
 
           {res && h && hu && (
             <div className="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
               {/* left: impact */}
               <div>
-                <div className="mb-1 flex justify-between text-[10px] text-slate-500">
+                <div className="mb-1 flex justify-between panel-title">
                   <span>CRUDE COVER · DAYS (P10–P90)</span>
-                  <span><span className="text-emerald-400">— managed</span> · <span className="text-red-400">— unmanaged</span></span>
+                  <span><span className="text-risk-low">— managed</span> · <span className="text-risk-high">— unmanaged</span></span>
                 </div>
                 <BandChart managed={res.scenario_managed.trajectories.stock_days}
                            unmanaged={res.scenario_unmanaged.trajectories.stock_days} floor={7} />
@@ -132,52 +142,52 @@ export default function ScenarioConsole({ chokepoints }: { chokepoints: { id: st
                     ["GAP", `${res.supply_gap_mbd} mb/d`],
                     ["RESPONSE", `${res.total_response_seconds}s`],
                   ].map(([k, v]) => (
-                    <div key={k} className="rounded border border-slate-800 bg-slate-900/60 p-2">
-                      <div className="text-[9px] text-slate-500">{k}</div>
-                      <div className="text-[13px] font-bold text-slate-100">{v}</div>
+                    <div key={k} className="rounded border border-hairline/60 bg-surface-2/40 p-2">
+                      <div className="text-[9px] text-ink-3">{k}</div>
+                      <div className="figure text-[13px] font-semibold text-ink">{v}</div>
                     </div>
                   ))}
                 </div>
-                <div className="mt-1 text-[9px] text-slate-600">*full pass-through, no excise buffer — see assumptions.yaml</div>
-                <div className="mt-2 rounded border border-slate-800 bg-slate-900/40 p-2 text-[10px] leading-relaxed text-slate-400 whitespace-pre-wrap">
+                <div className="mt-1 text-[9px] text-ink-3">*full pass-through, no excise buffer — see assumptions.yaml</div>
+                <div className="mt-2 rounded border border-hairline/60 bg-surface-2/40 p-2 text-[10px] leading-relaxed text-ink-2 whitespace-pre-wrap">
                   {res.briefing}
-                  <div className="mt-1 text-slate-600">briefing: {res.briefing_author} · clock: {res.response_clock.map((c) => `${c.stage.split(":")[0]} ${c.elapsed_s}s`).join(" → ")}</div>
+                  <div className="figure mt-1 text-ink-3">briefing: {res.briefing_author} · clock: {res.response_clock.map((c) => `${c.stage.split(":")[0]} ${c.elapsed_s}s`).join(" → ")}</div>
                 </div>
               </div>
 
               {/* right: order sheet */}
               <div>
-                <div className="mb-1 flex justify-between text-[10px] text-slate-500">
+                <div className="mb-1 flex justify-between panel-title">
                   <span>EXECUTABLE ORDER SHEET (LP-OPTIMIZED)</span>
                   <span>{res.procurement.coverage_pct}% of gap · Δ${res.procurement.daily_premium_musd}M/day</span>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-[420px] border-separate border-spacing-0 text-[10px]">
                     <thead>
-                      <tr className="text-left text-slate-500">
-                        <th className="border-b border-slate-700 py-1 pr-3">SUPPLIER</th>
-                        <th className="border-b border-slate-700 pr-3">GRADE</th>
-                        <th className="border-b border-slate-700 pr-3">ROUTE</th>
-                        <th className="border-b border-slate-700 pr-3 text-right">MB/D</th>
-                        <th className="border-b border-slate-700 pr-3 text-right">ETA</th>
-                        <th className="border-b border-slate-700 text-right">$/BBL</th>
+                      <tr className="text-left text-ink-3">
+                        <th className="border-b border-hairline py-1 pr-3">SUPPLIER</th>
+                        <th className="border-b border-hairline pr-3">GRADE</th>
+                        <th className="border-b border-hairline pr-3">ROUTE</th>
+                        <th className="border-b border-hairline pr-3 text-right">MB/D</th>
+                        <th className="border-b border-hairline pr-3 text-right">ETA</th>
+                        <th className="border-b border-hairline text-right">$/BBL</th>
                       </tr>
                     </thead>
                     <tbody>
                       {res.procurement.orders.map((o, i) => (
-                        <tr key={i} className="text-slate-300">
-                          <td className="whitespace-nowrap border-b border-slate-800/60 py-1.5 pr-3">{o.supplier}</td>
-                          <td className="whitespace-nowrap border-b border-slate-800/60 pr-3 text-amber-300/80">{o.grade}</td>
-                          <td className="whitespace-nowrap border-b border-slate-800/60 pr-3 text-slate-500">{o.route}</td>
-                          <td className="border-b border-slate-800/60 pr-3 text-right tabular-nums">{o.volume_mbd.toFixed(2)}</td>
-                          <td className="border-b border-slate-800/60 pr-3 text-right tabular-nums">{o.first_arrival_days}d</td>
-                          <td className="border-b border-slate-800/60 text-right tabular-nums">{o.landed_usd_bbl.toFixed(2)}</td>
+                        <tr key={i} className="text-ink-2">
+                          <td className="whitespace-nowrap border-b border-hairline/50 py-1.5 pr-3">{o.supplier}</td>
+                          <td className="whitespace-nowrap border-b border-hairline/50 pr-3 text-accent/90">{o.grade}</td>
+                          <td className="whitespace-nowrap border-b border-hairline/50 pr-3 text-ink-3">{o.route}</td>
+                          <td className="border-b border-hairline/50 pr-3 text-right tabular-nums">{o.volume_mbd.toFixed(2)}</td>
+                          <td className="border-b border-hairline/50 pr-3 text-right tabular-nums">{o.first_arrival_days}d</td>
+                          <td className="border-b border-hairline/50 text-right tabular-nums">{o.landed_usd_bbl.toFixed(2)}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <div className="mt-2 rounded border border-slate-800 bg-slate-900/40 p-2 text-[10px] text-slate-400">
+                <div className="mt-2 rounded border border-hairline/60 bg-surface-2/40 p-2 text-[10px] text-ink-2">
                   SPR BRIDGE: {res.spr.total_released_mbbl} million bbl over {res.spr.days_active} days
                   (ISPRL Phase I) · first seaborne relief {res.procurement.first_relief_days ?? "—"}d
                 </div>

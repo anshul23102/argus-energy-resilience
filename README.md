@@ -6,8 +6,9 @@ India imports **88%** of its crude oil. **~40%** of it sails through one strait 
 When that strait hiccups, your petrol price moves within days — and today, the national response
 is assembled by hand, over phone calls, after the price has already moved.
 
-**ARGUS is the war-room that sees it coming.** It watches the world continuously — news wires,
-vessel traffic, sanctions, prices — maintains a live, probabilistic disruption risk score per
+**ARGUS is the war-room that sees it coming.** It watches the world continuously — news wires
+and market prices, over a curated model of the physical supply chain — maintains a live,
+probabilistic disruption risk score per
 supply corridor, and when a threat materializes (or an analyst asks *"what if?"*), it simulates
 the cascade through India's actual refining system and **generates an executable procurement
 response** — which barrels, from which terminals, on which routes, at what landed cost — in
@@ -36,7 +37,6 @@ flowchart TB
     subgraph PERCEPTION["PERCEPTION — live feeds"]
         N["GDELT + Google News RSS<br/>500 headlines/cycle"] --> X["LLM extractor<br/>Gemini→Groq→rules chain<br/>ONE batched call/cycle"]
         P["Prices: Brent/WTI/INR<br/>(yfinance, 5-min TTL)"]
-        S["OFAC sanctions registry"]
     end
     subgraph KG["KNOWLEDGE GRAPH — 79 nodes / 96 edges"]
         G["22 refineries · 9 terminals · 3 SPR caverns<br/>8 suppliers · 14 export terminals · 17 grades<br/>10 routes · 6 chokepoints"]
