@@ -70,6 +70,7 @@ export default function WarRoomMap({
         version: 8,
         sources: {
           land: { type: "geojson", data: "/land.geojson" },
+          countries: { type: "geojson", data: "/countries.geojson" },
           terrain: {
             type: "raster-dem",
             tiles: ["https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png"],
@@ -82,6 +83,10 @@ export default function WarRoomMap({
           { id: "ocean", type: "background", paint: { "background-color": "#0a1220" } },
           { id: "land", type: "fill", source: "land", paint: { "fill-color": "#141f30" } },
           { id: "coast", type: "line", source: "land", paint: { "line-color": "#33465f", "line-width": 0.7 } },
+          {
+            id: "country-borders", type: "line", source: "countries",
+            paint: { "line-color": "#3d5273", "line-width": 0.6, "line-opacity": 0.85 },
+          },
         ],
         sky: {
           "sky-color": "#0d1626",
