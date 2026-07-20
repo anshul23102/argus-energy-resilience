@@ -116,14 +116,19 @@ export default function WarRoomMap({
     // tile requests that can churn continuously at low zoom on a globe.
     setReady(true);
 
-    // Globe projection only needs the style parsed. 3D terrain needs sources
-    // fully registered, which "load" does not guarantee (setTerrain throws
-    // "Style is not done loading" if called too early) — "idle" does
-    // guarantee it, so terrain is applied there, independently, best-effort.
+    // Deliberately mercator, not globe: deck.gl-mapbox's MapboxOverlay syncs
+    // its picking viewport to maplibre's camera assuming a standard mercator
+    // projection. Under globe projection the two drift apart as the camera
+    // rotates and tilts, so a rendered node's true screen position and its
+    // pickable position under the cursor silently diverge; every hover/click
+    // target then misses. Terrain, pitch and sky still deliver a real 3D
+    // scene without that desync.
+    //
+    // 3D terrain needs sources fully registered, which the "load" event does
+    // not guarantee (setTerrain throws "Style is not done loading" if called
+    // too early); "idle" does guarantee it, so terrain is applied there,
+    // independently, best-effort.
     map.on("load", () => {
-      try {
-        map.setProjection({ type: "globe" });
-      } catch { /* projection swap only needs the style, safe here */ }
       map.resize();
     });
     map.once("idle", () => {
