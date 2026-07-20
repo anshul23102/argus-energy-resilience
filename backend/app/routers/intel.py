@@ -13,6 +13,11 @@ def get_prices():
     return prices.quotes()
 
 
+@router.get("/prices/history")
+def price_history(days: int = 30):
+    return prices.brent_recent(days=min(days, 90))
+
+
 @router.post("/news/poll")
 def poll_news(hours: int = 24):
     return news.poll(hours=hours)

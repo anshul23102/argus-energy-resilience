@@ -26,6 +26,11 @@ def get_suppliers():
     return data.suppliers()
 
 
+@router.get("/grades")
+def get_grades():
+    return data.grades()
+
+
 @router.get("/chokepoints")
 def get_chokepoints():
     cps = []

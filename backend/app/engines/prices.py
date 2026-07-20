@@ -50,6 +50,25 @@ def quotes() -> dict[str, Any]:
     return {"as_of": _cache["at"], **_cache["quotes"]}
 
 
+_hist_cache: dict[str, Any] = {"at": 0.0, "days": 0, "rows": None}
+
+
+def brent_recent(days: int = 30):
+    """Recent daily Brent closes for the header sparkline. 1h TTL."""
+    now = time.time()
+    if _hist_cache["rows"] is None or _hist_cache["days"] != days or now - _hist_cache["at"] > 3600:
+        try:
+            h = yf.Ticker("BZ=F").history(period=f"{days + 10}d", interval="1d")
+            _hist_cache["rows"] = [
+                {"date": str(idx.date()), "close": round(float(row["Close"]), 2)}
+                for idx, row in h.iterrows()
+            ][-days:]
+        except Exception:
+            _hist_cache["rows"] = _hist_cache["rows"] or []
+        _hist_cache.update(at=now, days=days)
+    return _hist_cache["rows"]
+
+
 def brent_history(start: str, end: str):
     """Daily Brent closes for backtesting, as [{date, close}]."""
     h = yf.Ticker("BZ=F").history(start=start, end=end, interval="1d")

@@ -1,13 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { MapboxOverlay } from "@deck.gl/mapbox";
 import { PathLayer, ScatterplotLayer, TextLayer } from "deck.gl";
-import { api, BacktestRow, Chokepoint, CorridorRisk, IntelEvent, Port, Prices, Refinery, Route, SprSite } from "@/lib/api";
+import {
+  api, BacktestRow, Chokepoint, CorridorRisk, GradeInfo, IntelEvent, Port,
+  PricePoint, Prices, Refinery, Route, SprSite, Supplier, Terminal,
+} from "@/lib/api";
 import ScenarioConsole from "@/components/ScenarioConsole";
 import AssumptionsPanel from "@/components/AssumptionsPanel";
+import AssetDrawer, { Selection } from "@/components/AssetDrawer";
 
 const SEVERITY_STYLE: Record<string, string> = {
   rhetoric: "text-ink-3", incident: "text-risk-elevated",
@@ -28,23 +32,53 @@ function riskBand(p: number): "low" | "elevated" | "high" {
   return "low";
 }
 
+function Sparkline({ points }: { points: PricePoint[] }) {
+  if (points.length < 2) return null;
+  const W = 84, H = 20;
+  const vals = points.map((p) => p.close);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const x = (i: number) => (i / (vals.length - 1)) * W;
+  const y = (v: number) => H - ((v - min) / (max - min || 1)) * (H - 2) - 1;
+  const d = vals.map((v, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(" ");
+  const up = vals[vals.length - 1] >= vals[0];
+  return (
+    <svg
+      viewBox={`0 0 ${W} ${H}`}
+      className="h-5 w-[84px]"
+      role="img"
+      aria-label={`Brent last ${points.length} sessions: ${vals[0]} to ${vals[vals.length - 1]}`}
+    >
+      <title>{`Brent ${points[0].date} → ${points[points.length - 1].date}`}</title>
+      <path d={d} fill="none" strokeWidth="1.2"
+        stroke={up ? "var(--risk-high)" : "var(--risk-low)"} opacity="0.9" />
+    </svg>
+  );
+}
+
+interface TerminalPoint extends Terminal { supplierId: string; supplierName: string; }
+
 export default function WarRoom() {
   const mapDiv = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
+  const overlayRef = useRef<MapboxOverlay | null>(null);
   const [refineries, setRefineries] = useState<Refinery[]>([]);
   const [ports, setPorts] = useState<Port[]>([]);
   const [spr, setSpr] = useState<SprSite[]>([]);
   const [chokepoints, setChokepoints] = useState<Chokepoint[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
+  const [suppliers, setSuppliers] = useState<Supplier[]>([]);
+  const [grades, setGrades] = useState<Record<string, GradeInfo>>({});
   const [risk, setRisk] = useState<CorridorRisk[]>([]);
   const [graphStats, setGraphStats] = useState<string>("");
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
   const [clock, setClock] = useState<string>("");
   const [apiDown, setApiDown] = useState(false);
   const [prices, setPrices] = useState<Prices | null>(null);
+  const [history, setHistory] = useState<PricePoint[]>([]);
   const [intel, setIntel] = useState<IntelEvent[]>([]);
   const [backtests, setBacktests] = useState<BacktestRow[]>([]);
   const [assumptionsOpen, setAssumptionsOpen] = useState(false);
+  const [selection, setSelection] = useState<Selection | null>(null);
 
   useEffect(() => {
     const load = () => {
@@ -55,6 +89,7 @@ export default function WarRoom() {
     load();
     const t = setInterval(load, 60_000);
     api.backtests().then(setBacktests).catch(() => {});
+    api.priceHistory(30).then(setHistory).catch(() => {});
     return () => clearInterval(t);
   }, []);
 
@@ -64,16 +99,27 @@ export default function WarRoom() {
   }, []);
 
   useEffect(() => {
-    Promise.all([api.refineries(), api.ports(), api.spr(), api.chokepoints(), api.routes(), api.corridorRisk(), api.graphStats()])
-      .then(([rf, po, sp, cp, rt, rk, gs]) => {
-        setRefineries(rf); setPorts(po); setSpr(sp); setChokepoints(cp); setRoutes(rt); setRisk(rk);
+    Promise.all([
+      api.refineries(), api.ports(), api.spr(), api.chokepoints(), api.routes(),
+      api.corridorRisk(), api.graphStats(), api.suppliers(), api.grades(),
+    ])
+      .then(([rf, po, sp, cp, rt, rk, gs, su, gr]) => {
+        setRefineries(rf); setPorts(po); setSpr(sp); setChokepoints(cp); setRoutes(rt);
+        setRisk(rk); setSuppliers(su); setGrades(gr);
         setGraphStats(`${gs.nodes} nodes · ${gs.edges} edges`);
       })
       .catch(() => setApiDown(true));
   }, []);
 
+  const terminals: TerminalPoint[] = useMemo(
+    () => suppliers.flatMap((s) =>
+      s.export_terminals.map((t) => ({ ...t, supplierId: s.id, supplierName: s.name }))),
+    [suppliers],
+  );
+
+  // ---- map lifecycle: create ONCE ----------------------------------------
   useEffect(() => {
-    if (!mapDiv.current || refineries.length === 0) return;
+    if (!mapDiv.current || mapRef.current || refineries.length === 0) return;
 
     const map = new maplibregl.Map({
       container: mapDiv.current,
@@ -88,27 +134,55 @@ export default function WarRoom() {
           { id: "coast", type: "line", source: "land", paint: { "line-color": "#2c3d55", "line-width": 0.6 } },
         ],
       },
-      center: [62, 18],
-      zoom: 3.1,
+      center: [55, 14],
+      zoom: 2.9,
       attributionControl: false,
     });
     mapRef.current = map;
+    const overlay = new MapboxOverlay({ layers: [] });
+    map.addControl(overlay);
+    overlayRef.current = overlay;
+    // deck.gl-mapbox's overlay canvas defaults to pointer-events:none (it expects
+    // maplibre to own hit-testing); without this, hover/click never reach our
+    // pickable layers and every onHover/onClick silently no-ops.
+    const deckCanvas = mapDiv.current.querySelector<HTMLCanvasElement>("#deckgl-overlay");
+    if (deckCanvas) deckCanvas.style.pointerEvents = "auto";
+    // map may initialize before the flex layout settles — keep canvas synced to container
+    const ro = new ResizeObserver(() => map.resize());
+    ro.observe(mapDiv.current);
+    map.once("load", () => map.resize());
+    map.on("error", (e) => console.error("maplibre:", e.error?.message ?? e));
+    return () => { ro.disconnect(); map.remove(); mapRef.current = null; overlayRef.current = null; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refineries.length > 0]);
 
+  // ---- layers: update in place (no map teardown on data refresh) ---------
+  useEffect(() => {
+    if (!overlayRef.current) return;
     const riskByCp = Object.fromEntries(risk.map((r) => [r.chokepoint, r.posterior_horizon_prob]));
+    const selectedTerminals = selection?.kind === "supplier"
+      ? new Set(selection.supplier.export_terminals.map((t) => t.id))
+      : null;
 
-    const layers = [
+    overlayRef.current.setProps({ layers: [
       new PathLayer<Route>({
         id: "routes",
         data: routes,
         getPath: (d) => d.waypoints,
         getColor: (d) => {
+          const supplierRoute = selectedTerminals && d.from_terminals.some((t) => selectedTerminals.has(t));
+          if (selectedTerminals) {
+            return supplierRoute ? [235, 185, 70, 220] : [120, 140, 170, 30];
+          }
           const worst = Math.max(0, ...d.chokepoints.map((c) => riskByCp[c] ?? 0));
           const [r, g, b] = RISK_RGB[riskBand(worst)];
           return [r, g, b, 90];
         },
-        getWidth: 2,
+        getWidth: (d) =>
+          selectedTerminals && d.from_terminals.some((t) => selectedTerminals.has(t)) ? 3 : 2,
         widthUnits: "pixels",
         pickable: true,
+        updateTriggers: { getColor: [risk, selection], getWidth: [selection] },
         onHover: (i) =>
           setHover(i.object ? { x: i.x, y: i.y, text: `${i.object.name} — ${i.object.distance_nm} nm · ${i.object.voyage_days}d` } : null),
       }),
@@ -126,28 +200,60 @@ export default function WarRoom() {
         getLineWidth: 2,
         lineWidthUnits: "pixels",
         pickable: true,
+        updateTriggers: { getFillColor: [risk] },
         onHover: (i) =>
           setHover(i.object ? { x: i.x, y: i.y, text: `${i.object.name} — ${i.object.supply_at_risk_pct}% of India's imports exposed` } : null),
+      }),
+      new ScatterplotLayer<TerminalPoint>({
+        id: "terminals",
+        data: terminals,
+        getPosition: (d) => [d.lon, d.lat],
+        getRadius: 22000,
+        radiusMinPixels: 6,
+        radiusMaxPixels: 10,
+        getFillColor: (d) =>
+          selection?.kind === "supplier" && selection.supplier.id === d.supplierId
+            ? [235, 185, 70, 235]
+            : [148, 163, 184, 190],
+        stroked: true,
+        getLineColor: [15, 23, 42, 255],
+        getLineWidth: 1,
+        lineWidthUnits: "pixels",
+        pickable: true,
+        updateTriggers: { getFillColor: [selection] },
+        onHover: (i) =>
+          setHover(i.object ? { x: i.x, y: i.y, text: `▲ ${i.object.name} — ${i.object.supplierName} export terminal` } : null),
+        onClick: (i) => {
+          const s = suppliers.find((x) => x.id === i.object?.supplierId);
+          if (s) setSelection({ kind: "supplier", supplier: s });
+        },
       }),
       new ScatterplotLayer<Refinery>({
         id: "refineries",
         data: refineries,
         getPosition: (d) => [d.lon, d.lat],
         getRadius: (d) => 12000 + d.capacity_mmtpa * 1800,
-        getFillColor: [96, 165, 250, 200],
+        radiusMinPixels: 4,
+        getFillColor: (d) =>
+          selection?.kind === "refinery" && selection.refinery.id === d.id
+            ? [235, 185, 70, 235]
+            : [96, 165, 250, 200],
         stroked: true,
         getLineColor: [30, 58, 138, 255],
         getLineWidth: 1,
         lineWidthUnits: "pixels",
         pickable: true,
+        updateTriggers: { getFillColor: [selection] },
         onHover: (i) =>
           setHover(i.object ? { x: i.x, y: i.y, text: `${i.object.name} — ${i.object.capacity_mmtpa} MMTPA · NCI ${i.object.nelson_complexity}` } : null),
+        onClick: (i) => i.object && setSelection({ kind: "refinery", refinery: i.object }),
       }),
       new ScatterplotLayer<Port>({
         id: "ports",
         data: ports,
         getPosition: (d) => [d.lon, d.lat],
         getRadius: 9000,
+        radiusMinPixels: 3,
         getFillColor: [232, 121, 249, 190],
         pickable: true,
         onHover: (i) => setHover(i.object ? { x: i.x, y: i.y, text: `⚓ ${i.object.name}${i.object.handles_vlcc ? " · VLCC" : ""}` } : null),
@@ -157,6 +263,7 @@ export default function WarRoom() {
         data: spr,
         getPosition: (d) => [d.lon, d.lat],
         getRadius: 14000,
+        radiusMinPixels: 4,
         getFillColor: [250, 204, 21, 210],
         stroked: true,
         getLineColor: [120, 90, 0, 255],
@@ -173,17 +280,8 @@ export default function WarRoom() {
         getPixelOffset: [0, -18],
         fontFamily: "ui-monospace, monospace",
       }),
-    ];
-
-    const overlay = new MapboxOverlay({ layers });
-    map.addControl(overlay);
-    // map may initialize before the flex layout settles — keep canvas synced to container
-    const ro = new ResizeObserver(() => map.resize());
-    ro.observe(mapDiv.current);
-    map.once("load", () => map.resize());
-    map.on("error", (e) => console.error("maplibre:", e.error?.message ?? e));
-    return () => { ro.disconnect(); map.remove(); mapRef.current = null; };
-  }, [refineries, ports, spr, chokepoints, routes, risk]);
+    ]});
+  }, [refineries, ports, spr, chokepoints, routes, risk, terminals, suppliers, selection]);
 
   const flyToCorridor = (id: string) => {
     const cp = chokepoints.find((c) => c.id === id);
@@ -204,17 +302,18 @@ export default function WarRoom() {
         </div>
         <div className="flex items-center gap-5 text-[11px]">
           {prices && (
-            <span className="figure flex gap-4">
+            <span className="figure flex items-center gap-4">
               {(["brent", "wti", "usd_inr"] as const).map((k) => {
                 const q = prices[k];
                 const up = q.change_pct >= 0;
                 return (
-                  <span key={k} className="text-ink-2">
+                  <span key={k} className="flex items-center gap-1.5 text-ink-2">
                     <span className="text-ink-3">{k === "usd_inr" ? "USD/INR" : k.toUpperCase()}</span>{" "}
                     {q.price.toFixed(2)}{" "}
                     <span className={up ? "text-risk-high" : "text-risk-low"}>
                       {up ? "▲" : "▼"}{Math.abs(q.change_pct).toFixed(1)}%
                     </span>
+                    {k === "brent" && <Sparkline points={history} />}
                     {q.stale && <span className="text-accent"> stale</span>}
                   </span>
                 );
@@ -347,6 +446,7 @@ export default function WarRoom() {
         chokepoints={chokepoints.filter((c) => c.daily_oil_flow_mbd).map((c) => ({ id: c.id, name: c.name }))}
       />
 
+      <AssetDrawer selection={selection} grades={grades} routes={routes} onClose={() => setSelection(null)} />
       <AssumptionsPanel open={assumptionsOpen} onClose={() => setAssumptionsOpen(false)} />
 
       {/* Tooltip */}

@@ -10,6 +10,7 @@ export interface Refinery {
   id: string; name: string; operator: string; state: string;
   lat: number; lon: number; capacity_mmtpa: number; coastal: boolean;
   nelson_complexity: number; sulfur_tolerance: string; crude_diet: string[];
+  import_port?: string | null; pipeline?: string;
 }
 export interface Port { id: string; name: string; lat: number; lon: number; coast: string; handles_vlcc: boolean; }
 export interface SprSite { id: string; name: string; lat: number; lon: number; capacity_mmt: number; }
@@ -19,7 +20,7 @@ export interface Chokepoint {
 }
 export interface Route {
   id: string; name: string; chokepoints: string[]; distance_nm: number;
-  voyage_days: number; waypoints: [number, number][];
+  voyage_days: number; waypoints: [number, number][]; from_terminals: string[];
 }
 export interface CorridorRisk {
   chokepoint: string; horizon_days: number; prior_annual_pct: number;
@@ -27,6 +28,13 @@ export interface CorridorRisk {
   drivers: { summary: string; severity: string; source: string; age_days: number; likelihood_ratio_applied: number }[];
 }
 
+export interface Terminal { id: string; name: string; lat: number; lon: number; basin: string; grades: string[]; }
+export interface Supplier {
+  id: string; name: string; share_pct: number; payment_risk: string; notes: string;
+  export_terminals: Terminal[]; grades: string[];
+}
+export interface GradeInfo { name: string; api: number; sulfur_pct: number; family: string; benchmark_diff_usd: number; }
+export interface PricePoint { date: string; close: number; }
 export interface Quote { price: number; change_pct: number; stale: boolean; }
 export interface Prices { as_of: number; brent: Quote; wti: Quote; usd_inr: Quote; }
 export interface IntelEvent { corridor: string; severity: string; summary: string; source: string; timestamp: number; corroborations: number; }
@@ -34,6 +42,9 @@ export interface BacktestRow { id: string; name: string; corridor: string; alert
 
 export const api = {
   prices: () => get<Prices>("/api/intel/prices"),
+  priceHistory: (days = 30) => get<PricePoint[]>(`/api/intel/prices/history?days=${days}`),
+  suppliers: () => get<Supplier[]>("/api/assets/suppliers"),
+  grades: () => get<Record<string, GradeInfo>>("/api/assets/grades"),
   events: () => get<IntelEvent[]>("/api/intel/events"),
   backtests: () => get<BacktestRow[]>("/api/intel/backtest"),
   refineries: () => get<Refinery[]>("/api/assets/refineries"),
