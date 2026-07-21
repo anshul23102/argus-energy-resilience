@@ -32,6 +32,7 @@ const DATASETS = [
     sources: [
       "EIA World Oil Transit Chokepoints report",
       "Standard sea route distance tables",
+      "Turkish Straits (Bosphorus/Dardanelles) added as a 7th chokepoint at 3.7 mb/d, EIA H1 2025 figure, linked to the Novorossiysk to Suez route it physically transits before Suez",
     ],
   },
 ];
@@ -40,6 +41,19 @@ const LIVE_FEEDS = [
   { name: "Crude and currency prices", source: "Yahoo Finance futures data, five minute cache" },
   { name: "News signal", source: "GDELT 2.0 Doc API and Google News RSS, polled roughly every 15 minutes" },
   { name: "Event extraction", source: "Gemini or Groq language model when a key is configured, deterministic keyword rules otherwise" },
+];
+
+const REAL_WORLD_VALIDATION = [
+  {
+    name: "Carriers actively manage Hormuz risk today",
+    detail: "Maersk publishes a standing operational advisory titled \"Maersk Operations through Strait of Hormuz\", confirming this corridor is a live operational concern for a top-3 global carrier, not a hypothetical modeled for this project.",
+    link: "https://www.maersk.com/local-information/imea/india/routes",
+  },
+  {
+    name: "India's energy sector is a named FDI reform priority",
+    detail: "The Asia Society Policy Institute's Indo-Pacific supply chain tracker records India's 2021 inbound FDI at $44.7B (versus $44.5B five years earlier) and a 2020 World Bank ease-of-doing-business rank of 63/190, with energy explicitly named among the sectors targeted for onshoring reform, macro context for why corridor resilience matters strategically, not an engine input.",
+    link: "https://asiasociety.org/policy-institute/supply-chains-shifting-indo-pacific/india",
+  },
 ];
 
 const CONFIDENCE_LEVELS = [
@@ -98,6 +112,23 @@ export default function SourcesPage() {
             <div key={c.tier} className={`py-3 ${i > 0 ? "hairline-section" : ""}`}>
               <p className="text-[14px] font-semibold text-ink">{c.tier}</p>
               <p className="mt-1 text-[13px] leading-relaxed text-ink-2">{c.detail}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="section-title">Live operational validation</h2>
+        <p className="caption mt-1">
+          External, independent confirmation that this corridor matters in the real world today.
+        </p>
+        <div className="mt-3">
+          {REAL_WORLD_VALIDATION.map((v, i) => (
+            <div key={v.name} className={`py-3 ${i > 0 ? "hairline-section" : ""}`}>
+              <a href={v.link} target="_blank" rel="noopener noreferrer" className="text-[14px] font-semibold text-accent hover:underline">
+                {v.name}
+              </a>
+              <p className="mt-1 text-[13px] leading-relaxed text-ink-2">{v.detail}</p>
             </div>
           ))}
         </div>

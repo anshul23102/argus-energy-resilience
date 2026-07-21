@@ -66,6 +66,16 @@
       "india_dependency_pct": 5,
       "width_nm": 2.5,
       "alternatives": "None for Baltic exports"
+    },
+    {
+      "id": "turkish-straits",
+      "name": "Turkish Straits (Bosphorus/Dardanelles)",
+      "lat": 41.1,
+      "lon": 29.05,
+      "daily_oil_flow_mbd": 3.7,
+      "india_dependency_pct": null,
+      "width_nm": 0.5,
+      "alternatives": "No shipping bypass exists; the only alternative is pipeline export avoiding the straits entirely (e.g. Baku-Tbilisi-Ceyhan for Caspian barrels)."
     }
   ],
   "routes": [
@@ -206,6 +216,7 @@
         "new-mangalore"
       ],
       "chokepoints": [
+        "turkish-straits",
         "suez",
         "bab-el-mandeb"
       ],
