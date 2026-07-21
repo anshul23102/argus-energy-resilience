@@ -51,26 +51,26 @@ const CONFIDENCE_LEVELS = [
 
 export default function SourcesPage() {
   return (
-    <div className="mx-auto max-w-3xl px-8 py-8">
-      <p className="text-[13px] leading-relaxed text-ink-2">
+    <div className="mx-auto max-w-3xl px-8 py-10">
+      <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
         ARGUS is built on a hybrid of curated public infrastructure data and live market and news
         feeds. Nothing in the model is invented. Every figure below traces to a named public
         source, and every assumption carries a confidence tag that is visible and editable on the{" "}
         <a href="/assumptions" className="text-accent hover:underline">Assumptions page</a>.
       </p>
 
-      <section className="mt-8">
-        <h2 className="text-[15px] font-semibold text-ink">Curated infrastructure datasets</h2>
-        <div className="mt-3 space-y-3">
-          {DATASETS.map((ds) => (
-            <div key={ds.file} className="card p-4">
+      <section className="mt-10">
+        <h2 className="section-title">Curated infrastructure datasets</h2>
+        <div className="mt-3">
+          {DATASETS.map((ds, i) => (
+            <div key={ds.file} className={`py-4 ${i > 0 ? "hairline-section" : ""}`}>
               <div className="flex items-baseline justify-between">
-                <h3 className="text-[13px] font-medium text-ink">{ds.name}</h3>
-                <span className="figure text-[11px] text-ink-3">{ds.file}</span>
+                <h3 className="text-[14px] font-medium text-ink">{ds.name}</h3>
+                <span className="figure text-[12px] text-ink-3">{ds.file}</span>
               </div>
-              <ul className="mt-2 space-y-1">
+              <ul className="mt-1.5">
                 {ds.sources.map((s) => (
-                  <li key={s} className="text-[12px] leading-relaxed text-ink-2">- {s}</li>
+                  <li key={s} className="text-[13px] leading-relaxed text-ink-2">{s}</li>
                 ))}
               </ul>
             </div>
@@ -78,34 +78,34 @@ export default function SourcesPage() {
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-[15px] font-semibold text-ink">Live feeds</h2>
-        <div className="mt-3 space-y-2">
-          {LIVE_FEEDS.map((f) => (
-            <div key={f.name} className="card flex items-center justify-between p-4">
-              <span className="text-[13px] text-ink">{f.name}</span>
-              <span className="text-[12px] text-ink-2">{f.source}</span>
+      <section className="mt-10">
+        <h2 className="section-title">Live feeds</h2>
+        <div className="mt-3">
+          {LIVE_FEEDS.map((f, i) => (
+            <div key={f.name} className={`flex items-center justify-between py-3 ${i > 0 ? "hairline-section" : ""}`}>
+              <span className="text-[14px] text-ink">{f.name}</span>
+              <span className="text-[13px] text-ink-2">{f.source}</span>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-[15px] font-semibold text-ink">Confidence tiers</h2>
+      <section className="mt-10">
+        <h2 className="section-title">Confidence tiers</h2>
         <p className="caption mt-1">Every assumption in the model is tagged with one of these four levels.</p>
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {CONFIDENCE_LEVELS.map((c) => (
-            <div key={c.tier} className="card p-4">
-              <p className="text-[13px] font-semibold text-ink">{c.tier}</p>
-              <p className="mt-1 text-[12px] leading-relaxed text-ink-2">{c.detail}</p>
+        <div className="mt-3">
+          {CONFIDENCE_LEVELS.map((c, i) => (
+            <div key={c.tier} className={`py-3 ${i > 0 ? "hairline-section" : ""}`}>
+              <p className="text-[14px] font-semibold text-ink">{c.tier}</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-ink-2">{c.detail}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mt-8">
-        <h2 className="text-[15px] font-semibold text-ink">What is simplified today</h2>
-        <p className="mt-2 text-[13px] leading-relaxed text-ink-2">
+      <section className="mt-10">
+        <h2 className="section-title">What is simplified today</h2>
+        <p className="mt-2 text-[15px] leading-relaxed text-ink-2">
           Corridor flow splits assume even distribution across a supplier's available routes until
           AIS vessel data can refine them. Freight cost is approximated rather than pulled from a
           live Worldscale feed. Retail price impact assumes full pass through, while India has

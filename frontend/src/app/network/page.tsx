@@ -44,34 +44,34 @@ export default function NetworkPage() {
           />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-3">
-          {tab === "suppliers" && filteredSuppliers.map((s) => (
+        <div className="flex-1 overflow-y-auto px-3">
+          {tab === "suppliers" && filteredSuppliers.map((s, i) => (
             <button
               key={s.id}
               onClick={() => setSelection({ kind: "supplier", supplier: s })}
-              className={`mb-1.5 block w-full rounded-md border p-3 text-left transition-colors duration-150 ${
+              className={`block w-full px-3 py-3 text-left transition-colors duration-150 ${i > 0 ? "hairline-section" : ""} ${
                 selection?.kind === "supplier" && selection.supplier.id === s.id
-                  ? "border-accent bg-accent/10" : "border-hairline bg-surface hover:bg-surface-2"
+                  ? "bg-accent/10" : "hover:bg-surface-2"
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium text-ink">{s.name}</span>
+                <span className="text-[14px] font-medium text-ink">{s.name}</span>
                 <span className="figure text-[12px] text-ink-3">{s.share_pct}%</span>
               </div>
               <p className="caption mt-0.5">{s.export_terminals.length} terminal{s.export_terminals.length !== 1 ? "s" : ""}, {s.grades.length} grades</p>
             </button>
           ))}
-          {tab === "refineries" && filteredRefineries.map((r) => (
+          {tab === "refineries" && filteredRefineries.map((r, i) => (
             <button
               key={r.id}
               onClick={() => setSelection({ kind: "refinery", refinery: r })}
-              className={`mb-1.5 block w-full rounded-md border p-3 text-left transition-colors duration-150 ${
+              className={`block w-full px-3 py-3 text-left transition-colors duration-150 ${i > 0 ? "hairline-section" : ""} ${
                 selection?.kind === "refinery" && selection.refinery.id === r.id
-                  ? "border-accent bg-accent/10" : "border-hairline bg-surface hover:bg-surface-2"
+                  ? "bg-accent/10" : "hover:bg-surface-2"
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-medium text-ink">{r.name}</span>
+                <span className="text-[14px] font-medium text-ink">{r.name}</span>
                 <span className="figure text-[12px] text-ink-3">{r.capacity_mmtpa} MMTPA</span>
               </div>
               <p className="caption mt-0.5">{r.operator}, {r.state}</p>
