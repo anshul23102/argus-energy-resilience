@@ -1,7 +1,7 @@
 "use client";
 
 import { GradeInfo, Route } from "@/lib/api";
-import { Selection } from "./WarRoomMap";
+import { Selection } from "./globe/GlobeMap";
 
 const RISK_TONE: Record<string, string> = {
   low: "text-risk-low", medium: "text-risk-elevated", high: "text-risk-high",

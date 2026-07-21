@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useNetworkData } from "@/lib/useNetworkData";
-import WarRoomMap, { Selection } from "@/components/WarRoomMap";
+import GlobeMap, { Selection } from "@/components/globe/GlobeMap";
 import AssetDrawer from "@/components/AssetDrawer";
 
 type Tab = "suppliers" | "refineries";
@@ -82,11 +82,10 @@ export default function NetworkPage() {
       </div>
 
       <div className="relative flex-1">
-        <WarRoomMap
+        <GlobeMap
           refineries={d.refineries} ports={d.ports} spr={d.spr} chokepoints={d.chokepoints}
           routes={d.routes} suppliers={d.suppliers} risk={d.risk}
           selection={selection} onSelect={setSelection}
-          initialPitch={40} initialZoom={2.4}
         />
         <AssetDrawer selection={selection} grades={d.grades} routes={d.routes} onClose={() => setSelection(null)} />
       </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowUpRight } from "lucide-react";
-import WarRoomMap, { Selection, riskBand } from "@/components/WarRoomMap";
+import GlobeMap, { Selection, riskBand } from "@/components/globe/GlobeMap";
 import AssetDrawer from "@/components/AssetDrawer";
 import { useNetworkData } from "@/lib/useNetworkData";
 import { NAV_ITEMS } from "@/lib/nav";
@@ -19,7 +19,7 @@ export default function Home() {
 
   return (
     <div className="relative h-full w-full">
-      <WarRoomMap
+      <GlobeMap
         refineries={d.refineries} ports={d.ports} spr={d.spr} chokepoints={d.chokepoints}
         routes={d.routes} suppliers={d.suppliers} risk={d.risk}
         selection={selection} onSelect={setSelection}

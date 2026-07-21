@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useNetworkData } from "@/lib/useNetworkData";
-import { riskBand } from "@/components/WarRoomMap";
+import { riskBand } from "@/components/globe/GlobeMap";
 import InfoTip from "@/components/InfoTip";
 
 const BAND_COLOR: Record<string, string> = {
