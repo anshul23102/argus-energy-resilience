@@ -94,7 +94,7 @@ export default function AssumptionsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-3xl px-8 py-10">
+    <div className="mx-auto max-w-[1400px] px-8 py-10 lg:px-16">
       <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
         Every number ARGUS computes traces back to one of these inputs, nothing is a hidden
         constant. Each is sourced and confidence rated in{" "}
@@ -103,16 +103,16 @@ export default function AssumptionsPage() {
         cascade move. Edits are session only, the file on disk stays authoritative.
       </p>
 
-      {GROUPS.map((g) => (
-        <section key={g.title} className="mt-10">
-          <h2 className="section-title">{g.title}</h2>
-          <p className="caption mb-1 mt-1">{g.description}</p>
-          <div>
-            {g.params.map((p, i) => {
-              const v = values[p.path];
-              return (
-                <div key={p.path} className={`flex flex-wrap items-center justify-between gap-4 py-4 ${i > 0 ? "hairline-section" : ""}`}>
-                  <div className="min-w-0">
+      <div className="mt-10 grid grid-cols-1 gap-x-12 gap-y-10 lg:grid-cols-3">
+        {GROUPS.map((g) => (
+          <section key={g.title}>
+            <h2 className="section-title">{g.title}</h2>
+            <p className="caption mb-1 mt-1">{g.description}</p>
+            <div>
+              {g.params.map((p, i) => {
+                const v = values[p.path];
+                return (
+                  <div key={p.path} className={`py-4 ${i > 0 ? "hairline-section" : ""}`}>
                     <div className="flex items-center gap-2">
                       <label htmlFor={p.path} className="text-[15px] text-ink">{p.label}</label>
                       {v?.overridden && (
@@ -120,31 +120,31 @@ export default function AssumptionsPage() {
                       )}
                     </div>
                     {v && <p className="caption mt-0.5">Confidence: {v.confidence}</p>}
+                    <div className="mt-2.5 flex items-center gap-2.5">
+                      <input
+                        id={p.path} type="number" step="any"
+                        placeholder={v ? String(v.value) : "."}
+                        value={drafts[p.path] ?? ""}
+                        onChange={(e) => setDrafts((d) => ({ ...d, [p.path]: e.target.value }))}
+                        onKeyDown={(e) => e.key === "Enter" && apply(p.path)}
+                        className="figure w-full rounded border border-hairline bg-surface-2 px-2.5 py-1.5 text-right text-[14px] text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+                      />
+                      <span className="caption w-12 shrink-0">{p.unit}</span>
+                      <button
+                        onClick={() => apply(p.path)}
+                        disabled={busy || !drafts[p.path]}
+                        className="shrink-0 rounded border border-hairline px-3 py-1.5 text-[13px] text-ink-2 transition-colors duration-150 hover:border-accent hover:text-accent disabled:opacity-30"
+                      >
+                        Apply
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2.5">
-                    <input
-                      id={p.path} type="number" step="any"
-                      placeholder={v ? String(v.value) : "."}
-                      value={drafts[p.path] ?? ""}
-                      onChange={(e) => setDrafts((d) => ({ ...d, [p.path]: e.target.value }))}
-                      onKeyDown={(e) => e.key === "Enter" && apply(p.path)}
-                      className="figure w-28 rounded border border-hairline bg-surface-2 px-2.5 py-1.5 text-right text-[14px] text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
-                    />
-                    <span className="caption w-12 shrink-0">{p.unit}</span>
-                    <button
-                      onClick={() => apply(p.path)}
-                      disabled={busy || !drafts[p.path]}
-                      className="rounded border border-hairline px-3 py-1.5 text-[13px] text-ink-2 transition-colors duration-150 hover:border-accent hover:text-accent disabled:opacity-30"
-                    >
-                      Apply
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+                );
+              })}
+            </div>
+          </section>
+        ))}
+      </div>
 
       <button
         onClick={resetAll} disabled={busy}

@@ -21,7 +21,7 @@ export default function RiskPage() {
     .sort((a, b) => b.posterior_horizon_prob - a.posterior_horizon_prob);
 
   return (
-    <div className="mx-auto max-w-5xl px-8 py-10">
+    <div className="mx-auto max-w-[1400px] px-8 py-10 lg:px-16">
       <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
         This page answers one question per shipping corridor: how likely is a disruption in the
         next 30 days, given what the news actually says right now. Each percentage is a Bayesian
