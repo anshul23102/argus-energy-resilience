@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useNetworkData } from "@/lib/useNetworkData";
+import InfoTip from "@/components/InfoTip";
 
 const BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
 
@@ -80,10 +81,12 @@ export default function ScenarioPage() {
   return (
     <div className="mx-auto max-w-6xl px-8 py-10">
       <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
-        Simulate a chokepoint closure. A 1000 run Monte Carlo model projects the impact with and
-        without a coordinated response, a linear program prices the cheapest feasible
-        replacement barrels, and a scheduler bridges the gap with strategic reserves. Every
-        parameter is listed on the <a href="/assumptions" className="text-accent hover:underline">Assumptions page</a>.
+        This page answers: if this chokepoint closed today, what would actually happen, and how
+        fast could India respond. Pick a severity and duration below and run it. A 1000 run Monte
+        Carlo model projects the impact with and without a coordinated response, a linear program
+        prices the cheapest feasible replacement barrels, and a scheduler bridges the gap with
+        strategic reserves. Every parameter is listed on the{" "}
+        <a href="/assumptions" className="text-accent hover:underline">Assumptions page</a>.
       </p>
 
       <div className="card mb-8 mt-8 flex flex-wrap items-end gap-6 p-5">
@@ -129,15 +132,15 @@ export default function ScenarioPage() {
 
             <div className="hairline-section grid grid-cols-3 gap-x-4 gap-y-6 py-8">
               {[
-                ["Peak Brent", `$${h.peak_brent_p50}`],
-                ["Retail petrol", `+₹${h.retail_petrol_delta_inr_per_litre_p50}/L`],
-                ["GDP impact", `${h.gdp_impact_bps_p50} bps`],
-                ["Min cover, managed", `${h.min_stock_days_p50}d`],
-                ["Min cover, unmanaged", `${hu.min_stock_days_p50}d`],
-                ["Response time", `${res.total_response_seconds}s`],
-              ].map(([k, v]) => (
+                ["Peak Brent", `$${h.peak_brent_p50}`, "Median simulated Brent price at the worst point of the closure, across 1000 Monte Carlo runs."],
+                ["Retail petrol", `+₹${h.retail_petrol_delta_inr_per_litre_p50}/L`, "Estimated pump-price rise passed through to Indian consumers from that Brent move."],
+                ["GDP impact", `${h.gdp_impact_bps_p50} bps`, "Estimated hit to India's GDP growth, in basis points, from the crude price shock."],
+                ["Min cover, managed", `${h.min_stock_days_p50}d`, "Lowest crude stock, in days of cover, India reaches if the response engine acts."],
+                ["Min cover, unmanaged", `${hu.min_stock_days_p50}d`, "Same measure with no coordinated response, replacement barrels, or SPR release."],
+                ["Response time", `${res.total_response_seconds}s`, "Wall-clock time this simulation actually took to run, end to end, on this machine."],
+              ].map(([k, v, tip]) => (
                 <div key={k}>
-                  <p className="caption">{k}</p>
+                  <p className="caption flex items-center gap-1.5">{k} <InfoTip text={tip} /></p>
                   <p className="stat-value mt-1 text-[28px] text-ink">{v}</p>
                 </div>
               ))}

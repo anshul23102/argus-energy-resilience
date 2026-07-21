@@ -21,10 +21,11 @@ export default function IntelligencePage() {
   return (
     <div className="mx-auto max-w-4xl px-8 py-10">
       <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
-        A batched language model reads roughly 500 headlines per polling cycle from GDELT and
-        Google News, extracts corridor and severity, and clusters same-incident coverage so
-        volume does not inflate the risk score. This is perception only, the scoring math lives
-        in the risk engine.
+        This is the raw evidence feeding the risk scores elsewhere in ARGUS, the events a corridor
+        percentage actually moved on. A batched language model reads roughly 500 headlines per
+        polling cycle from GDELT and Google News, extracts corridor and severity, and clusters
+        same-incident coverage so volume does not inflate the score. This page is perception only,
+        the scoring math lives in the risk engine.
       </p>
 
       <div className="mb-6 mt-8 flex flex-wrap gap-2">

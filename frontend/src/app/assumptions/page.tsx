@@ -96,7 +96,8 @@ export default function AssumptionsPage() {
   return (
     <div className="mx-auto max-w-3xl px-8 py-10">
       <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
-        Every parameter the engines use, sourced and confidence rated in{" "}
+        Every number ARGUS computes traces back to one of these inputs, nothing is a hidden
+        constant. Each is sourced and confidence rated in{" "}
         <span className="figure">data/assumptions.yaml</span>. Change one here and re-run the{" "}
         <a href="/scenario" className="text-accent hover:underline">Scenario Console</a> to see the
         cascade move. Edits are session only, the file on disk stays authoritative.

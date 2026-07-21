@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/nav";
 import PriceTicker from "./PriceTicker";
+import IntroOverlay from "./IntroOverlay";
 
 const ICONS: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
   "/": Home,
@@ -39,6 +40,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-full w-full bg-bg text-ink">
+      <IntroOverlay />
       {/* Left nav rail */}
       <nav className="flex w-[96px] shrink-0 flex-col items-center border-r border-hairline bg-surface py-6">
         <Link href="/" className="mb-8 flex flex-col items-center gap-1.5" title="ARGUS, energy supply chain intelligence">

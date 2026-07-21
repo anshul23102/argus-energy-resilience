@@ -26,6 +26,7 @@ export default function NetworkPage() {
     <div className="flex h-full">
       <div className="flex w-[380px] shrink-0 flex-col border-r border-hairline">
         <div className="border-b border-hairline p-4">
+          <p className="caption mb-3">Browse the physical network behind the numbers: where crude actually comes from and where it's refined.</p>
           <div className="mb-3 flex gap-1 rounded-md bg-surface-2 p-1">
             {(["suppliers", "refineries"] as Tab[]).map((t) => (
               <button

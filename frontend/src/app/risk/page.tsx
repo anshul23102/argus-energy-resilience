@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useNetworkData } from "@/lib/useNetworkData";
 import { riskBand } from "@/components/WarRoomMap";
+import InfoTip from "@/components/InfoTip";
 
 const BAND_COLOR: Record<string, string> = {
   low: "var(--risk-low)", elevated: "var(--risk-elevated)", high: "var(--risk-high)",
@@ -22,10 +23,12 @@ export default function RiskPage() {
   return (
     <div className="mx-auto max-w-5xl px-8 py-10">
       <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
-        Each corridor carries a Bayesian posterior probability of disruption within 30 days: an
-        expert prior updated by live, corroborated news evidence with a 14 day half life. The math
-        lives in <span className="figure">engines/risk.py</span>, not inside a language model.
-        Full parameters on the <Link href="/assumptions" className="text-accent hover:underline">Assumptions page</Link>.
+        This page answers one question per shipping corridor: how likely is a disruption in the
+        next 30 days, given what the news actually says right now. Each percentage is a Bayesian
+        posterior: an expert prior, updated by live, corroborated news evidence with a 14 day half
+        life, so old evidence fades and new evidence moves the score. The math lives in{" "}
+        <span className="figure">engines/risk.py</span>, not inside a language model. Full
+        parameters on the <Link href="/assumptions" className="text-accent hover:underline">Assumptions page</Link>.
       </p>
 
       <div className="mt-10 grid grid-cols-1 gap-x-12 lg:grid-cols-2">
@@ -39,8 +42,11 @@ export default function RiskPage() {
                   <h2 className="section-title">{cp.name}</h2>
                   <p className="caption mt-1">{cp.supply_at_risk_pct}% of India&apos;s imports transit here</p>
                 </div>
-                <span className="stat-value shrink-0 text-[40px]" style={{ color: BAND_COLOR[band] }}>
-                  {(r.posterior_horizon_prob * 100).toFixed(1)}%
+                <span className="flex shrink-0 items-start gap-1.5">
+                  <span className="stat-value text-[40px]" style={{ color: BAND_COLOR[band] }}>
+                    {(r.posterior_horizon_prob * 100).toFixed(1)}%
+                  </span>
+                  <InfoTip text="Probability this corridor sees a disruption in the next 30 days, computed from an expert prior updated by live news evidence. Not a war prediction, a traceable calculation." />
                 </span>
               </div>
 
