@@ -94,8 +94,8 @@ export default function AssumptionsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-8 py-8">
-      <p className="caption mb-8 max-w-2xl">
+    <div className="mx-auto max-w-3xl px-8 py-10">
+      <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
         Every parameter the engines use, sourced and confidence rated in{" "}
         <span className="figure">data/assumptions.yaml</span>. Change one here and re-run the{" "}
         <a href="/scenario" className="text-accent hover:underline">Scenario Console</a> to see the
@@ -103,37 +103,37 @@ export default function AssumptionsPage() {
       </p>
 
       {GROUPS.map((g) => (
-        <section key={g.title} className="mb-6">
-          <h2 className="text-[15px] font-semibold text-ink">{g.title}</h2>
-          <p className="caption mb-3 mt-0.5">{g.description}</p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {g.params.map((p) => {
+        <section key={g.title} className="mt-10">
+          <h2 className="section-title">{g.title}</h2>
+          <p className="caption mb-1 mt-1">{g.description}</p>
+          <div>
+            {g.params.map((p, i) => {
               const v = values[p.path];
               return (
-                <div key={p.path} className="card p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <label htmlFor={p.path} className="text-[12px] leading-snug text-ink-2">{p.label}</label>
-                    {v?.overridden && (
-                      <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-accent">edited</span>
-                    )}
+                <div key={p.path} className={`flex flex-wrap items-center justify-between gap-4 py-4 ${i > 0 ? "hairline-section" : ""}`}>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <label htmlFor={p.path} className="text-[15px] text-ink">{p.label}</label>
+                      {v?.overridden && (
+                        <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-accent">edited</span>
+                      )}
+                    </div>
+                    {v && <p className="caption mt-0.5">Confidence: {v.confidence}</p>}
                   </div>
-                  <div className="mt-2 flex items-center gap-2">
+                  <div className="flex items-center gap-2.5">
                     <input
                       id={p.path} type="number" step="any"
                       placeholder={v ? String(v.value) : "."}
                       value={drafts[p.path] ?? ""}
                       onChange={(e) => setDrafts((d) => ({ ...d, [p.path]: e.target.value }))}
                       onKeyDown={(e) => e.key === "Enter" && apply(p.path)}
-                      className="figure w-full rounded border border-hairline bg-surface-2 px-2.5 py-1.5 text-[13px] text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
+                      className="figure w-28 rounded border border-hairline bg-surface-2 px-2.5 py-1.5 text-right text-[14px] text-ink placeholder:text-ink-3 focus:border-accent focus:outline-none"
                     />
-                    <span className="caption shrink-0">{p.unit}</span>
-                  </div>
-                  <div className="mt-2 flex items-center justify-between">
-                    {v && <span className="caption">Confidence: {v.confidence}</span>}
+                    <span className="caption w-12 shrink-0">{p.unit}</span>
                     <button
                       onClick={() => apply(p.path)}
                       disabled={busy || !drafts[p.path]}
-                      className="ml-auto rounded border border-hairline px-2.5 py-1 text-[11px] text-ink-2 transition-colors duration-150 hover:border-accent hover:text-accent disabled:opacity-30"
+                      className="rounded border border-hairline px-3 py-1.5 text-[13px] text-ink-2 transition-colors duration-150 hover:border-accent hover:text-accent disabled:opacity-30"
                     >
                       Apply
                     </button>
@@ -147,7 +147,7 @@ export default function AssumptionsPage() {
 
       <button
         onClick={resetAll} disabled={busy}
-        className="rounded-md border border-hairline px-4 py-2 text-[13px] text-ink-2 transition-colors duration-150 hover:bg-surface-2 disabled:opacity-40"
+        className="mt-10 rounded-md border border-hairline px-4 py-2 text-[13px] text-ink-2 transition-colors duration-150 hover:bg-surface-2 disabled:opacity-40"
       >
         Reset all to file defaults
       </button>

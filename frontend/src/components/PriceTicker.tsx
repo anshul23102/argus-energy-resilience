@@ -26,7 +26,7 @@ export default function PriceTicker({ compact = false }: { compact?: boolean }) 
   useEffect(() => {
     const load = () => api.prices().then(setPrices).catch(() => {});
     load();
-    api.priceHistory(30).then(setHistory).catch(() => {});
+    api.priceHistory(365).then(setHistory).catch(() => {});
     const t = setInterval(load, 60_000);
     return () => clearInterval(t);
   }, []);

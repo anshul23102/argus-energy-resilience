@@ -24,7 +24,7 @@ interface ScenarioResponse {
 }
 
 function BandChart({ managed, unmanaged, floor }: { managed: Band; unmanaged: Band; floor: number }) {
-  const W = 560, H = 180, n = managed.p50.length;
+  const W = 560, H = 200, n = managed.p50.length;
   const all = [...managed.p10, ...managed.p90, ...unmanaged.p10, ...unmanaged.p90, 0];
   const yMax = Math.max(...all) * 1.08;
   const x = (i: number) => (i / (n - 1)) * W;
@@ -33,15 +33,15 @@ function BandChart({ managed, unmanaged, floor }: { managed: Band; unmanaged: Ba
   const area = (lo: number[], hi: number[]) =>
     path(hi) + " " + lo.slice().reverse().map((v, j) => `L${x(n - 1 - j).toFixed(1)},${y(v).toFixed(1)}`).join(" ") + " Z";
   return (
-    <svg viewBox={`0 0 ${W} ${H + 20}`} className="w-full">
+    <svg viewBox={`0 0 ${W} ${H + 22}`} className="w-full">
       <path d={area(unmanaged.p10, unmanaged.p90)} fill="var(--risk-high)" opacity="0.12" />
       <path d={area(managed.p10, managed.p90)} fill="var(--risk-low)" opacity="0.14" />
       <path d={path(unmanaged.p50)} stroke="var(--risk-high)" strokeWidth="2" fill="none" />
       <path d={path(managed.p50)} stroke="var(--risk-low)" strokeWidth="2" fill="none" />
       <line x1="0" x2={W} y1={y(floor)} y2={y(floor)} stroke="var(--accent)" strokeWidth="1" strokeDasharray="5 4" opacity="0.7" />
-      <text x="4" y={y(floor) - 6} fill="var(--accent)" fontSize="11" fontFamily="var(--font-inter)">operational floor, {floor}d</text>
-      <text x="0" y={H + 16} fill="var(--ink-3)" fontSize="11" fontFamily="var(--font-mono-data)">day 0</text>
-      <text x={W - 44} y={H + 16} fill="var(--ink-3)" fontSize="11" fontFamily="var(--font-mono-data)">day {n}</text>
+      <text x="4" y={y(floor) - 6} fill="var(--accent)" fontSize="12" fontFamily="var(--font-inter)">operational floor, {floor}d</text>
+      <text x="0" y={H + 18} fill="var(--ink-3)" fontSize="12" fontFamily="var(--font-mono-data)">day 0</text>
+      <text x={W - 48} y={H + 18} fill="var(--ink-3)" fontSize="12" fontFamily="var(--font-mono-data)">day {n}</text>
     </svg>
   );
 }
@@ -78,20 +78,20 @@ export default function ScenarioPage() {
   const hu = res?.scenario_unmanaged.headline;
 
   return (
-    <div className="mx-auto max-w-6xl px-8 py-8">
-      <p className="caption mb-6 max-w-2xl">
+    <div className="mx-auto max-w-6xl px-8 py-10">
+      <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
         Simulate a chokepoint closure. A 1000 run Monte Carlo model projects the impact with and
         without a coordinated response, a linear program prices the cheapest feasible
         replacement barrels, and a scheduler bridges the gap with strategic reserves. Every
         parameter is listed on the <a href="/assumptions" className="text-accent hover:underline">Assumptions page</a>.
       </p>
 
-      <div className="card mb-6 flex flex-wrap items-end gap-6 p-5">
+      <div className="card mb-8 mt-8 flex flex-wrap items-end gap-6 p-5">
         <label className="flex flex-col gap-1.5">
           <span className="section-label">Chokepoint</span>
           <select
             value={cp} onChange={(e) => setCp(e.target.value)}
-            className="rounded-md border border-hairline bg-surface-2 px-3 py-2 text-[13px] text-ink focus:border-accent focus:outline-none"
+            className="rounded-md border border-hairline bg-surface-2 px-3 py-2 text-[14px] text-ink focus:border-accent focus:outline-none"
           >
             {chokepointOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
@@ -108,26 +108,26 @@ export default function ScenarioPage() {
         </label>
         <button
           onClick={run} disabled={running}
-          className="ml-auto rounded-md bg-accent px-6 py-2.5 text-[13px] font-semibold text-accent-ink transition-[filter] duration-150 hover:brightness-110 disabled:opacity-40"
+          className="ml-auto rounded-md bg-accent px-6 py-2.5 text-[14px] font-semibold text-accent-ink transition-[filter] duration-150 hover:brightness-110 disabled:opacity-40"
         >
           {running ? "Simulating." : "Run response"}
         </button>
       </div>
 
-      {err && <div className="card mb-6 p-4 text-[13px] text-risk-high">Backend error: {err}</div>}
+      {err && <p className="mb-6 text-[14px] text-risk-high">Backend error: {err}</p>}
 
       {res && h && hu && (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-          <div className="lg:col-span-3 space-y-6">
-            <div className="card p-6">
-              <div className="mb-2 flex items-center justify-between">
-                <h2 className="text-[14px] font-semibold text-ink">Crude cover, days</h2>
-                <p className="text-[12px]"><span className="text-risk-low">Managed</span> vs <span className="text-risk-high">unmanaged</span></p>
+        <div className="grid grid-cols-1 gap-x-12 lg:grid-cols-5">
+          <div className="lg:col-span-3">
+            <div className="hairline-section pb-8">
+              <div className="mb-3 flex items-center justify-between">
+                <h2 className="section-title">Crude cover, days</h2>
+                <p className="text-[13px]"><span className="text-risk-low">Managed</span> vs <span className="text-risk-high">unmanaged</span></p>
               </div>
               <BandChart managed={res.scenario_managed.trajectories.stock_days} unmanaged={res.scenario_unmanaged.trajectories.stock_days} floor={7} />
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="hairline-section grid grid-cols-3 gap-x-4 gap-y-6 py-8">
               {[
                 ["Peak Brent", `$${h.peak_brent_p50}`],
                 ["Retail petrol", `+₹${h.retail_petrol_delta_inr_per_litre_p50}/L`],
@@ -136,53 +136,59 @@ export default function ScenarioPage() {
                 ["Min cover, unmanaged", `${hu.min_stock_days_p50}d`],
                 ["Response time", `${res.total_response_seconds}s`],
               ].map(([k, v]) => (
-                <div key={k} className="card p-4">
+                <div key={k}>
                   <p className="caption">{k}</p>
-                  <p className="figure mt-1 text-[18px] font-semibold text-ink">{v}</p>
+                  <p className="stat-value mt-1 text-[28px] text-ink">{v}</p>
                 </div>
               ))}
             </div>
 
-            <div className="card p-6">
-              <h2 className="mb-3 text-[14px] font-semibold text-ink">Situation briefing</h2>
-              <p className="whitespace-pre-wrap text-[13px] leading-relaxed text-ink-2">{res.briefing}</p>
-              <p className="caption mt-3">
+            <div className="py-8">
+              <h2 className="section-title mb-3">Situation briefing</h2>
+              <p className="whitespace-pre-wrap text-[15px] leading-relaxed text-ink-2">{res.briefing}</p>
+              <p className="caption mt-4">
                 Author: {res.briefing_author}. Clock: {res.response_clock.map((c) => `${c.stage.split(":")[0]} ${c.elapsed_s}s`).join(", ")}.
               </p>
             </div>
           </div>
 
-          <div className="lg:col-span-2 space-y-6">
-            <div className="card p-6">
+          <div className="lg:col-span-2">
+            <div className="hairline-section pb-8 lg:border-b-0">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-[14px] font-semibold text-ink">Order sheet</h2>
-                <p className="figure text-[12px] text-ink-3">{res.procurement.coverage_pct}% covered</p>
+                <h2 className="section-title">Order sheet</h2>
+                <p className="figure text-[13px] text-ink-3">{res.procurement.coverage_pct}% covered</p>
               </div>
-              <div className="space-y-2">
-                {res.procurement.orders.map((o, i) => (
-                  <div key={i} className="rounded-md border border-hairline bg-surface-2 p-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[12px] font-medium capitalize text-ink">{o.supplier.replace(/-/g, " ")}</span>
-                      <span className="text-[11px] text-accent">{o.grade}</span>
-                    </div>
-                    <p className="caption mt-1">{o.route.replace(/-/g, " ")}</p>
-                    <div className="figure mt-1.5 flex justify-between text-[11px] text-ink-2">
-                      <span>{o.volume_mbd.toFixed(2)} mb/d</span>
-                      <span>{o.first_arrival_days}d ETA</span>
-                      <span>${o.landed_usd_bbl.toFixed(2)}/bbl</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="caption mt-3">
+              <table className="w-full border-collapse text-[14px]">
+                <thead>
+                  <tr className="hairline-section text-left">
+                    <th className="pb-2 font-medium text-ink-3">Supplier</th>
+                    <th className="pb-2 font-medium text-ink-3">Grade</th>
+                    <th className="pb-2 text-right font-medium text-ink-3">mb/d</th>
+                    <th className="pb-2 text-right font-medium text-ink-3">ETA</th>
+                    <th className="pb-2 text-right font-medium text-ink-3">$/bbl</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {res.procurement.orders.map((o, i) => (
+                    <tr key={i} className="hairline-section">
+                      <td className="py-2.5 capitalize text-ink">{o.supplier.replace(/-/g, " ")}</td>
+                      <td className="py-2.5 text-accent">{o.grade}</td>
+                      <td className="figure py-2.5 text-right text-ink-2">{o.volume_mbd.toFixed(2)}</td>
+                      <td className="figure py-2.5 text-right text-ink-2">{o.first_arrival_days}d</td>
+                      <td className="figure py-2.5 text-right text-ink-2">${o.landed_usd_bbl.toFixed(2)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <p className="caption mt-4">
                 First seaborne relief in {res.procurement.first_relief_days ?? "unknown"} days, premium
                 ${res.procurement.daily_premium_musd}M per day above baseline.
               </p>
             </div>
 
-            <div className="card p-6">
-              <h2 className="mb-2 text-[14px] font-semibold text-ink">Strategic reserve bridge</h2>
-              <p className="text-[13px] text-ink-2">
+            <div className="py-8">
+              <h2 className="section-title mb-2">Strategic reserve bridge</h2>
+              <p className="text-[15px] text-ink-2">
                 {res.spr.total_released_mbbl} million barrels released over {res.spr.days_active} days from ISPRL Phase I.
               </p>
             </div>
@@ -191,9 +197,7 @@ export default function ScenarioPage() {
       )}
 
       {!res && !err && (
-        <div className="card p-12 text-center">
-          <p className="text-[13px] text-ink-2">Set a scenario above and run it to see the full response.</p>
-        </div>
+        <p className="py-16 text-center text-[15px] text-ink-2">Set a scenario above and run it to see the full response.</p>
       )}
     </div>
   );
