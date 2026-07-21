@@ -19,18 +19,18 @@ export default function IntelligencePage() {
   const filtered = corridorFilter === "all" ? d.intel : d.intel.filter((e) => e.corridor === corridorFilter);
 
   return (
-    <div className="mx-auto max-w-4xl px-8 py-8">
-      <p className="caption mb-6 max-w-2xl">
+    <div className="mx-auto max-w-4xl px-8 py-10">
+      <p className="max-w-2xl text-[15px] leading-relaxed text-ink-2">
         A batched language model reads roughly 500 headlines per polling cycle from GDELT and
         Google News, extracts corridor and severity, and clusters same-incident coverage so
         volume does not inflate the risk score. This is perception only, the scoring math lives
         in the risk engine.
       </p>
 
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-6 mt-8 flex flex-wrap gap-2">
         <button
           onClick={() => setCorridorFilter("all")}
-          className={`rounded-full px-3 py-1.5 text-[12px] font-medium transition-colors duration-150 ${corridorFilter === "all" ? "bg-accent text-accent-ink" : "bg-surface-2 text-ink-2 hover:bg-surface-3"}`}
+          className={`rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-150 ${corridorFilter === "all" ? "bg-accent text-accent-ink" : "bg-surface-2 text-ink-2 hover:bg-surface-3"}`}
         >
           All corridors
         </button>
@@ -38,7 +38,7 @@ export default function IntelligencePage() {
           <button
             key={c}
             onClick={() => setCorridorFilter(c)}
-            className={`rounded-full px-3 py-1.5 text-[12px] font-medium capitalize transition-colors duration-150 ${corridorFilter === c ? "bg-accent text-accent-ink" : "bg-surface-2 text-ink-2 hover:bg-surface-3"}`}
+            className={`rounded-full px-4 py-2 text-[13px] font-medium capitalize transition-colors duration-150 ${corridorFilter === c ? "bg-accent text-accent-ink" : "bg-surface-2 text-ink-2 hover:bg-surface-3"}`}
           >
             {c.replace(/-/g, " ")}
           </button>
@@ -46,28 +46,26 @@ export default function IntelligencePage() {
       </div>
 
       {filtered.length === 0 && (
-        <div className="card p-8 text-center">
-          <p className="text-[13px] text-ink-2">No corroborated signals in this window.</p>
-        </div>
+        <p className="caption py-10 text-center">No corroborated signals in this window.</p>
       )}
 
-      <div className="space-y-2.5">
+      <div>
         {filtered.map((e, i) => (
-          <div key={i} className="card p-4">
+          <div key={i} className={`py-4 ${i > 0 ? "hairline-section" : ""}`}>
             <div className="flex items-center justify-between">
-              <span className="text-[12px] font-medium capitalize text-ink-2">{e.corridor.replace(/-/g, " ")}</span>
+              <span className="text-[13px] font-semibold capitalize text-ink-2">{e.corridor.replace(/-/g, " ")}</span>
               <div className="flex items-center gap-2">
                 {e.corroborations > 1 && (
-                  <span className="figure rounded bg-surface-2 px-1.5 py-0.5 text-[10px] text-ink-3">
+                  <span className="figure rounded bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-3">
                     {e.corroborations} sources
                   </span>
                 )}
-                <span className={`text-[11px] font-medium uppercase tracking-wide ${SEVERITY_TONE[e.severity] ?? "text-ink-2"}`}>
+                <span className={`text-[12px] font-semibold uppercase tracking-wide ${SEVERITY_TONE[e.severity] ?? "text-ink-2"}`}>
                   {e.severity.replace("_", " ")}
                 </span>
               </div>
             </div>
-            <p className="mt-2 text-[13px] leading-relaxed text-ink">{e.summary}</p>
+            <p className="mt-2 text-[15px] leading-relaxed text-ink">{e.summary}</p>
             <p className="caption mt-1.5 truncate">{e.source}</p>
           </div>
         ))}

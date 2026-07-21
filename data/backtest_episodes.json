@@ -56,6 +56,34 @@
         {"date": "2024-04-13", "severity": "attack", "summary": "Iran launches 300+ drones/missiles at Israel in first direct attack"},
         {"date": "2024-04-19", "severity": "incident", "summary": "Reported Israeli strike near Isfahan; regional shipping on high alert"}
       ]
+    },
+    {
+      "id": "suez-2021",
+      "name": "Ever Given Grounding (Mar 2021)",
+      "corridor": "suez",
+      "window_start": "2021-03-15",
+      "window_end": "2021-04-05",
+      "peak_impact_date": "2021-03-25",
+      "peak_impact_note": "Ultra-large container ship Ever Given ran aground diagonally across the canal in high winds, fully blocking transit for six days; roughly 370 vessels queued at both ends before it was refloated 29 Mar. Deliberately included as a contrast case: this was a sudden accident, not an escalating geopolitical crisis, so there is no rhetoric or incident buildup for the engine to have caught in advance. A near-zero lead time here is the model working correctly, not a failure of it.",
+      "events": [
+        {"date": "2021-03-23", "severity": "full_closure", "summary": "Container ship Ever Given runs aground, blocking Suez Canal in both directions"},
+        {"date": "2021-03-25", "severity": "full_closure", "summary": "Canal remains fully blocked; roughly 370 vessels queued, salvage efforts ongoing"}
+      ]
+    },
+    {
+      "id": "hormuz-2011",
+      "name": "Hormuz Sanctions Standoff (2011-12)",
+      "corridor": "hormuz",
+      "window_start": "2011-11-15",
+      "window_end": "2012-04-01",
+      "peak_impact_date": "2012-03-01",
+      "peak_impact_note": "No physical attack occurred in this episode: Iran repeatedly threatened to close the strait in response to the incoming EU oil embargo, backed by naval exercises. Brent rose into the high $120s by March 2012 on the standoff. Included as the rhetoric-only counterpart to 2019/2024: it tests whether the engine can price sustained threat activity correctly without over-reacting to words alone.",
+      "events": [
+        {"date": "2011-12-04", "severity": "rhetoric", "summary": "Iranian vice president threatens to close Strait of Hormuz if oil sanctions are imposed"},
+        {"date": "2011-12-27", "severity": "rhetoric", "summary": "Iranian navy commander repeats Hormuz closure threat during Velayat-90 naval exercises"},
+        {"date": "2012-01-23", "severity": "rhetoric", "summary": "EU formally agrees to an oil embargo on Iran; Iranian officials renew closure warnings"},
+        {"date": "2012-02-25", "severity": "incident", "summary": "Iran conducts further naval drills near Hormuz amid heightened regional tension"}
+      ]
     }
   ]
 }
