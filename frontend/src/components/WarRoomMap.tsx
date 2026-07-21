@@ -39,6 +39,30 @@ function arcify(waypoints: [number, number][], distanceNm: number): [number, num
   });
 }
 
+// Walk an arcified path's cumulative length and return the position at
+// fraction t (0..1), so a marker can be animated smoothly along a route
+// that has an irregular number of waypoints.
+function pointOnPath(path: [number, number, number][], t: number): [number, number, number] {
+  if (path.length === 1) return path[0];
+  const segLens: number[] = [];
+  let total = 0;
+  for (let i = 1; i < path.length; i++) {
+    const d = Math.hypot(path[i][0] - path[i - 1][0], path[i][1] - path[i - 1][1]);
+    segLens.push(d);
+    total += d;
+  }
+  let target = t * total;
+  for (let i = 0; i < segLens.length; i++) {
+    if (target <= segLens[i] || i === segLens.length - 1) {
+      const f = segLens[i] > 0 ? target / segLens[i] : 0;
+      const a = path[i], b = path[i + 1];
+      return [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f, a[2] + (b[2] - a[2]) * f];
+    }
+    target -= segLens[i];
+  }
+  return path[path.length - 1];
+}
+
 export default function WarRoomMap({
   refineries, ports, spr, chokepoints, routes, suppliers, risk,
   selection, onSelect, interactive = true, initialPitch = 45, initialZoom = 3.3,
@@ -53,6 +77,7 @@ export default function WarRoomMap({
   const mapDiv = useRef<HTMLDivElement>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const overlayRef = useRef<MapboxOverlay | null>(null);
+  const baseLayersRef = useRef<(PathLayer | ScatterplotLayer | TextLayer)[]>([]);
   const [hover, setHover] = useState<{ x: number; y: number; text: string } | null>(null);
   const [ready, setReady] = useState(false);
 
@@ -80,12 +105,22 @@ export default function WarRoomMap({
           },
         },
         layers: [
-          { id: "ocean", type: "background", paint: { "background-color": "#0a1220" } },
-          { id: "land", type: "fill", source: "land", paint: { "fill-color": "#141f30" } },
-          { id: "coast", type: "line", source: "land", paint: { "line-color": "#33465f", "line-width": 0.7 } },
+          { id: "ocean", type: "background", paint: { "background-color": "#050b16" } },
+          { id: "land", type: "fill", source: "land", paint: { "fill-color": "#1b2a3f" } },
+          {
+            id: "hillshade", type: "hillshade", source: "terrain",
+            paint: {
+              "hillshade-illumination-direction": 315,
+              "hillshade-exaggeration": 0.65,
+              "hillshade-shadow-color": "#050b16",
+              "hillshade-highlight-color": "#3a5578",
+              "hillshade-accent-color": "#0d1a2c",
+            },
+          },
+          { id: "coast", type: "line", source: "land", paint: { "line-color": "#3d5a80", "line-width": 0.8 } },
           {
             id: "country-borders", type: "line", source: "countries",
-            paint: { "line-color": "#3d5273", "line-width": 0.6, "line-opacity": 0.85 },
+            paint: { "line-color": "#4a6488", "line-width": 0.6, "line-opacity": 0.85 },
           },
         ],
         sky: {
@@ -214,7 +249,7 @@ export default function WarRoomMap({
     const selectedTerminals = selection?.kind === "supplier"
       ? new Set(selection.supplier.export_terminals.map((t) => t.id)) : null;
 
-    overlayRef.current.setProps({ layers: [
+    baseLayersRef.current = [
       new PathLayer<Route>({
         id: "routes",
         data: routes,
@@ -295,8 +330,43 @@ export default function WarRoomMap({
         getSize: 12, getColor: [226, 232, 240, 230], getPixelOffset: [0, -20],
         fontFamily: "var(--font-inter), sans-serif", fontWeight: 600,
       }),
-    ]});
+    ];
+    overlayRef.current.setProps({ layers: baseLayersRef.current });
   }, [refineries, ports, spr, chokepoints, routes, risk, terminals, suppliers, selection, ready, interactive, onSelect]);
+
+  // Animate small packets flowing along each route so the network reads as
+  // live cargo movement rather than static lines painted on the map.
+  useEffect(() => {
+    if (!ready || routes.length === 0) return;
+    const arced = routes.map((r) => ({
+      id: r.id,
+      path: arcify(r.waypoints, r.distance_nm),
+      phase: (r.id.length * 37) % 100 / 100,
+    }));
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const elapsed = (now - start) / 1000;
+      const packets = arced.flatMap((r) =>
+        [0, 0.33, 0.66].map((offset) => {
+          const t = (elapsed / 14 + r.phase + offset) % 1;
+          return { routeId: r.id, position: pointOnPath(r.path, t) };
+        }),
+      );
+      const flowLayer = new ScatterplotLayer<{ routeId: string; position: [number, number, number] }>({
+        id: "flow-packets",
+        data: packets,
+        getPosition: (d) => d.position,
+        getRadius: 2600, radiusMinPixels: 2, radiusMaxPixels: 4,
+        getFillColor: [255, 214, 130, 235],
+        pickable: false,
+      });
+      overlayRef.current?.setProps({ layers: [...baseLayersRef.current, flowLayer] });
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [routes, ready]);
 
   return (
     <div className="relative h-full w-full">
