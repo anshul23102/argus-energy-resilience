@@ -10,6 +10,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/intelligence", label: "Intelligence", description: "Live news signal feed" },
   { href: "/scenario", label: "Scenario Console", description: "Simulate a disruption" },
   { href: "/network", label: "Network", description: "Suppliers, refineries, routes" },
+  { href: "/global", label: "Global Context", description: "India's energy position, worldwide" },
   { href: "/assumptions", label: "Assumptions", description: "Model parameters" },
   { href: "/sources", label: "Sources", description: "Data provenance and method" },
 ];

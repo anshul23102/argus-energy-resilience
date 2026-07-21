@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
-  Home, ShieldAlert, Radio, SlidersHorizontal, Waypoints, Settings2, BookOpen, ScanEye,
+  Home, ShieldAlert, Radio, SlidersHorizontal, Waypoints, Settings2, BookOpen, ScanEye, Globe2,
 } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/nav";
 import PriceTicker from "./PriceTicker";
@@ -16,6 +16,7 @@ const ICONS: Record<string, React.ComponentType<{ size?: number; strokeWidth?: n
   "/intelligence": Radio,
   "/scenario": SlidersHorizontal,
   "/network": Waypoints,
+  "/global": Globe2,
   "/assumptions": Settings2,
   "/sources": BookOpen,
 };

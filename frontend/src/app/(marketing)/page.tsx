@@ -70,7 +70,7 @@ export default function LandingPage() {
       </section>
 
       <section className="py-14">
-        <h2 className="section-title mb-6">Six views of the same supply chain</h2>
+        <h2 className="section-title mb-6">Every view of the same supply chain</h2>
         <div className="grid grid-cols-1 gap-px overflow-hidden rounded-lg bg-hairline sm:grid-cols-2 lg:grid-cols-3">
           {NAV_ITEMS.map((item) => (
             <Link
