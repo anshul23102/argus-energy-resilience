@@ -11,7 +11,7 @@ import PriceTicker from "./PriceTicker";
 import IntroOverlay from "./IntroOverlay";
 
 const ICONS: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
-  "/": Home,
+  "/war-room": Home,
   "/risk": ShieldAlert,
   "/intelligence": Radio,
   "/scenario": SlidersHorizontal,
@@ -43,7 +43,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       <IntroOverlay />
       {/* Left nav rail */}
       <nav className="flex w-[96px] shrink-0 flex-col items-center border-r border-hairline bg-surface py-6">
-        <Link href="/" className="mb-8 flex flex-col items-center gap-1.5" title="ARGUS, energy supply chain intelligence">
+        <Link href="/war-room" className="mb-8 flex flex-col items-center gap-1.5" title="ARGUS, energy supply chain intelligence">
           <span className="flex h-9 w-9 items-center justify-center rounded-full border border-accent/30 bg-accent/10">
             <ScanEye size={19} strokeWidth={1.75} className="text-accent" />
           </span>

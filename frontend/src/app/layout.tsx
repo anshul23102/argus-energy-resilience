@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google";
+import { Inter, JetBrains_Mono, Onest } from "next/font/google";
 import "./globals.css";
-import AppShell from "@/components/AppShell";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -9,11 +8,11 @@ const inter = Inter({
   display: "swap",
 });
 
-const spaceGrotesk = Space_Grotesk({
+const onest = Onest({
   variable: "--font-display",
   subsets: ["latin"],
   display: "swap",
-  weight: ["500", "600", "700"],
+  weight: ["500", "600", "700", "800"],
 });
 
 const dataMono = JetBrains_Mono({
@@ -36,11 +35,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${spaceGrotesk.variable} ${dataMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${onest.variable} ${dataMono.variable} h-full antialiased`}
     >
-      <body className="h-full">
-        <AppShell>{children}</AppShell>
-      </body>
+      <body className="h-full">{children}</body>
     </html>
   );
 }

@@ -5,7 +5,7 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "/", label: "War Room", description: "Live 3D network map" },
+  { href: "/war-room", label: "War Room", description: "Live 3D network map" },
   { href: "/risk", label: "Corridor Risk", description: "Bayesian disruption scoring" },
   { href: "/intelligence", label: "Intelligence", description: "Live news signal feed" },
   { href: "/scenario", label: "Scenario Console", description: "Simulate a disruption" },
