@@ -8,19 +8,24 @@ const SEVERITY_TONE: Record<string, string> = {
   attack: "text-risk-high", partial_closure: "text-risk-high", full_closure: "text-risk-high",
 };
 
+// An event is corridor-tagged, supplier-tagged, or (rarely) both — pick
+// whichever tag is present for filtering/display. Corridor takes priority
+// since it's the primary axis most of the UI is built around.
+const tagOf = (e: { corridor: string | null; supplier: string | null }) => e.corridor ?? e.supplier ?? "untagged";
+
 export default function IntelligencePage() {
   const d = useNetworkData();
   const [corridorFilter, setCorridorFilter] = useState<string>("all");
 
   const corridors = useMemo(
-    () => Array.from(new Set(d.intel.map((e) => e.corridor))).sort(),
+    () => Array.from(new Set(d.intel.map(tagOf))).sort(),
     [d.intel],
   );
-  const filtered = corridorFilter === "all" ? d.intel : d.intel.filter((e) => e.corridor === corridorFilter);
+  const filtered = corridorFilter === "all" ? d.intel : d.intel.filter((e) => tagOf(e) === corridorFilter);
 
   const byCorridor = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const e of filtered) counts.set(e.corridor, (counts.get(e.corridor) ?? 0) + 1);
+    for (const e of filtered) counts.set(tagOf(e), (counts.get(tagOf(e)) ?? 0) + 1);
     return [...counts.entries()].sort((a, b) => b[1] - a[1]);
   }, [filtered]);
 
@@ -68,7 +73,7 @@ export default function IntelligencePage() {
           {filtered.map((e, i) => (
             <div key={i} className={`py-4 ${i > 0 ? "hairline-section" : ""}`}>
               <div className="flex items-center justify-between">
-                <span className="text-[13px] font-semibold capitalize text-ink-2">{e.corridor.replace(/-/g, " ")}</span>
+                <span className="text-[13px] font-semibold capitalize text-ink-2">{tagOf(e).replace(/-/g, " ")}</span>
                 <div className="flex items-center gap-2">
                   {e.corroborations > 1 && (
                     <span className="figure rounded bg-surface-2 px-1.5 py-0.5 text-[11px] text-ink-3">
