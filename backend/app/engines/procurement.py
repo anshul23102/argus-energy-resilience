@@ -30,6 +30,13 @@ def optimize(gap_mbd: float, closed_chokepoints: list[str],
     brent0 = brent_now or a["economics"]["brent_default_usd"]["value"]
     war_premium = a["response"]["war_risk_premium_usd_bbl"]["value"]
     spare_cfg = a["response"]["supplier_spare_capacity_mbd"]
+    logistics = a["logistics"]
+    vlcc_mbbl = logistics["vlcc_capacity_mbbl"]["value"]
+    tankers_per_route = logistics["available_tankers_per_route"]["value"]
+    port_congestion_cap_mbd = (
+        logistics["port_max_vlcc_per_day"]["value"] * vlcc_mbbl
+        * logistics["crisis_active_discharge_points"]["value"]
+    )
     grades = data.grades()
     routes = data.routes()
     suppliers = {s["id"]: s for s in data.suppliers()}
@@ -60,10 +67,12 @@ def optimize(gap_mbd: float, closed_chokepoints: list[str],
                     landed = brent0 + gr["benchmark_diff_usd"] \
                         + 0.9 * r["voyage_days"] / 10.0 \
                         + (war_premium if crisis_adjacent else 0.0)
+                    route_capacity_mbd = tankers_per_route * vlcc_mbbl / (2 * r["voyage_days"])
                     candidates.append({
                         "supplier": sid, "grade": g, "route": r["id"],
                         "voyage_days": r["voyage_days"], "landed_usd_bbl": round(landed, 2),
                         "family": gr["family"], "spare_mbd": spare_mbd,
+                        "route_capacity_mbd": route_capacity_mbd,
                     })
 
     if not candidates:
@@ -74,9 +83,13 @@ def optimize(gap_mbd: float, closed_chokepoints: list[str],
 
     prob += pulp.lpSum(x[i] * candidates[i]["landed_usd_bbl"] for i in x)
     prob += pulp.lpSum(x.values()) >= gap_mbd, "fill_gap"
+    prob += pulp.lpSum(x.values()) <= port_congestion_cap_mbd, "port_congestion"
     for sid in {c["supplier"] for c in candidates}:
         cap = next(c["spare_mbd"] for c in candidates if c["supplier"] == sid)
         prob += pulp.lpSum(x[i] for i in x if candidates[i]["supplier"] == sid) <= cap, f"spare_{sid}"
+    for rid in {c["route"] for c in candidates}:
+        cap = next(c["route_capacity_mbd"] for c in candidates if c["route"] == rid)
+        prob += pulp.lpSum(x[i] for i in x if candidates[i]["route"] == rid) <= cap, f"tanker_{rid}"
     prob += pulp.lpSum(
         x[i] for i in x if candidates[i]["family"] in SOUR_FAMILIES
     ) >= MIN_SOUR_SHARE * gap_mbd, "sour_share"
@@ -112,5 +125,6 @@ def optimize(gap_mbd: float, closed_chokepoints: list[str],
         "orders": orders,
         "constraints": {"min_sour_share": MIN_SOUR_SHARE,
                         "closed_chokepoints": sorted(closed),
-                        "excluded_suppliers": sorted(excluded)},
+                        "excluded_suppliers": sorted(excluded),
+                        "port_congestion_cap_mbd": round(port_congestion_cap_mbd, 2)},
     }
