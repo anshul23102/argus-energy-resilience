@@ -2,10 +2,14 @@
 
 import { useMemo, useState } from "react";
 import { useNetworkData } from "@/lib/useNetworkData";
-import GlobeMap, { Selection } from "@/components/globe/GlobeMap";
+import GlobeMap, { Selection, riskBand } from "@/components/globe/GlobeMap";
 import AssetDrawer from "@/components/AssetDrawer";
 
 type Tab = "suppliers" | "refineries";
+
+const BAND_COLOR: Record<string, string> = {
+  low: "var(--risk-low)", elevated: "var(--risk-elevated)", high: "var(--risk-high)",
+};
 
 export default function NetworkPage() {
   const d = useNetworkData();
@@ -46,22 +50,33 @@ export default function NetworkPage() {
         </div>
 
         <div className="flex-1 overflow-y-auto px-3">
-          {tab === "suppliers" && filteredSuppliers.map((s, i) => (
-            <button
-              key={s.id}
-              onClick={() => setSelection({ kind: "supplier", supplier: s })}
-              className={`block w-full px-3 py-3 text-left transition-colors duration-150 ${i > 0 ? "hairline-section" : ""} ${
-                selection?.kind === "supplier" && selection.supplier.id === s.id
-                  ? "bg-accent/10" : "hover:bg-surface-2"
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[14px] font-medium text-ink">{s.name}</span>
-                <span className="figure text-[12px] text-ink-3">{s.share_pct}%</span>
-              </div>
-              <p className="caption mt-0.5">{s.export_terminals.length} terminal{s.export_terminals.length !== 1 ? "s" : ""}, {s.grades.length} grades</p>
-            </button>
-          ))}
+          {tab === "suppliers" && filteredSuppliers.map((s, i) => {
+            const r = d.supplierRisk.find((x) => x.supplier === s.id);
+            const band = r ? riskBand(r.posterior_horizon_prob) : null;
+            return (
+              <button
+                key={s.id}
+                onClick={() => setSelection({ kind: "supplier", supplier: s })}
+                className={`block w-full px-3 py-3 text-left transition-colors duration-150 ${i > 0 ? "hairline-section" : ""} ${
+                  selection?.kind === "supplier" && selection.supplier.id === s.id
+                    ? "bg-accent/10" : "hover:bg-surface-2"
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-[14px] font-medium text-ink">{s.name}</span>
+                  <span className="flex items-center gap-2">
+                    <span className="figure text-[12px] text-ink-3">{s.share_pct}% of imports</span>
+                    {r && (
+                      <span className="figure text-[12px]" style={{ color: BAND_COLOR[band!] }}>
+                        {(r.posterior_horizon_prob * 100).toFixed(1)}% risk
+                      </span>
+                    )}
+                  </span>
+                </div>
+                <p className="caption mt-0.5">{s.export_terminals.length} terminal{s.export_terminals.length !== 1 ? "s" : ""}, {s.grades.length} grades</p>
+              </button>
+            );
+          })}
           {tab === "refineries" && filteredRefineries.map((r, i) => (
             <button
               key={r.id}
@@ -87,7 +102,7 @@ export default function NetworkPage() {
           routes={d.routes} suppliers={d.suppliers} risk={d.risk}
           selection={selection} onSelect={setSelection}
         />
-        <AssetDrawer selection={selection} grades={d.grades} routes={d.routes} onClose={() => setSelection(null)} />
+        <AssetDrawer selection={selection} grades={d.grades} routes={d.routes} supplierRisk={d.supplierRisk} onClose={() => setSelection(null)} />
       </div>
     </div>
   );

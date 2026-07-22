@@ -84,7 +84,7 @@ export default function Home() {
         ))}
       </div>
 
-      <AssetDrawer selection={selection} grades={d.grades} routes={d.routes} onClose={() => setSelection(null)} />
+      <AssetDrawer selection={selection} grades={d.grades} routes={d.routes} supplierRisk={d.supplierRisk} onClose={() => setSelection(null)} />
     </div>
   );
 }

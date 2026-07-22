@@ -1,6 +1,6 @@
 "use client";
 
-import { GradeInfo, Route } from "@/lib/api";
+import { GradeInfo, Route, SupplierRisk } from "@/lib/api";
 import { Selection } from "./globe/GlobeMap";
 
 const RISK_TONE: Record<string, string> = {
@@ -8,11 +8,12 @@ const RISK_TONE: Record<string, string> = {
 };
 
 export default function AssetDrawer({
-  selection, grades, routes, onClose,
+  selection, grades, routes, supplierRisk, onClose,
 }: {
   selection: Selection | null;
   grades: Record<string, GradeInfo>;
   routes: Route[];
+  supplierRisk?: SupplierRisk[];
   onClose: () => void;
 }) {
   if (!selection) return null;
@@ -37,6 +38,21 @@ export default function AssetDrawer({
 
       {selection.kind === "supplier" && (
         <>
+          {(() => {
+            const r = supplierRisk?.find((x) => x.supplier === selection.supplier.id);
+            if (!r) return null;
+            return (
+              <div className="hairline-section pb-4">
+                <div className="flex items-baseline justify-between">
+                  <span className="section-label">30-day disruption risk</span>
+                  <span className="stat-value text-[22px] text-ink">{(r.posterior_horizon_prob * 100).toFixed(1)}%</span>
+                </div>
+                {r.drivers.length > 0 && (
+                  <p className="caption mt-1">{r.drivers[0].summary}</p>
+                )}
+              </div>
+            );
+          })()}
           <div className="hairline-section flex gap-6 pb-4 text-[13px]">
             <span className="text-ink-2"><span className="text-ink-3">Share of imports</span> <span className="figure">{selection.supplier.share_pct}%</span></span>
             <span className={RISK_TONE[selection.supplier.payment_risk.split(" ")[0]] ?? "text-ink-2"}>
