@@ -7,6 +7,7 @@ import {
   Home, ShieldAlert, Radio, SlidersHorizontal, Waypoints, Settings2, BookOpen, ScanEye, Globe2,
 } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/nav";
+import { useNetworkData } from "@/lib/useNetworkData";
 import PriceTicker from "./PriceTicker";
 import IntroOverlay from "./IntroOverlay";
 
@@ -23,6 +24,7 @@ const ICONS: Record<string, React.ComponentType<{ size?: number; strokeWidth?: n
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { loaded } = useNetworkData();
   const [apiDown, setApiDown] = useState(false);
   const [clock, setClock] = useState("");
 
@@ -88,7 +90,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </span>
           </div>
         </header>
-        <main className="min-h-0 flex-1 overflow-auto">{children}</main>
+        <main className="min-h-0 flex-1 overflow-auto">
+          {loaded ? children : (
+            <div className="flex h-full w-full items-center justify-center">
+              <p className="text-[14px] text-ink-3">Loading ARGUS…</p>
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );
