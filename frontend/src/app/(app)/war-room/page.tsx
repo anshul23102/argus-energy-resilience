@@ -7,6 +7,7 @@ import GlobeMap, { Selection, riskBand } from "@/components/globe/GlobeMap";
 import AssetDrawer from "@/components/AssetDrawer";
 import { useNetworkData } from "@/lib/useNetworkData";
 import { NAV_ITEMS } from "@/lib/nav";
+import { timeAgo } from "@/lib/time";
 
 export default function Home() {
   const d = useNetworkData();
@@ -43,7 +44,10 @@ export default function Home() {
       {/* Top corridor risk, top-right. Three entries, not the full list. */}
       {topRisks.length > 0 && (
         <div className="panel-glass absolute right-5 top-5 z-10 w-72 p-2">
-          <p className="section-label px-3 pb-2 pt-1">Highest disruption risk, 30 day</p>
+          <p className="section-label px-3 pt-1">Highest disruption risk, 30 day</p>
+          <p className="caption px-3 pb-2 text-[11px] text-ink-3">
+            Evidence as of {timeAgo(d.newsStatus?.last_poll.at ?? null)}
+          </p>
           {topRisks.map((r, i) => {
             const cp = d.chokepoints.find((c) => c.id === r.chokepoint)!;
             const band = riskBand(r.posterior_horizon_prob);

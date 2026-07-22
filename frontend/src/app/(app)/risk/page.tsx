@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useNetworkData } from "@/lib/useNetworkData";
 import { riskBand } from "@/components/globe/GlobeMap";
 import InfoTip from "@/components/InfoTip";
+import { timeAgo } from "@/lib/time";
 
 const BAND_COLOR: Record<string, string> = {
   low: "var(--risk-low)", elevated: "var(--risk-elevated)", high: "var(--risk-high)",
@@ -30,6 +31,7 @@ export default function RiskPage() {
         <span className="figure">engines/risk.py</span>, not inside a language model. Full
         parameters on the <Link href="/assumptions" className="text-accent hover:underline">Assumptions page</Link>.
       </p>
+      <p className="caption mt-3">Evidence as of {timeAgo(d.newsStatus?.last_poll.at ?? null)}</p>
 
       <div className="mt-10 grid grid-cols-1 gap-x-12 lg:grid-cols-2">
         {corridors.map((r) => {

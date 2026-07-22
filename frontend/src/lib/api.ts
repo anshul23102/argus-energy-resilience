@@ -38,6 +38,11 @@ export interface PricePoint { date: string; close: number; }
 export interface Quote { price: number; change_pct: number; stale: boolean; }
 export interface Prices { as_of: number; brent: Quote; wti: Quote; usd_inr: Quote; }
 export interface IntelEvent { corridor: string; severity: string; summary: string; source: string; timestamp: number; corroborations: number; }
+export interface NewsStatus {
+  last_poll: { at: number | null; fetched: number; extracted: number; error: string | null; source?: string };
+  extractor_provider: string;
+  events_held: number;
+}
 export interface BacktestRow { id: string; name: string; corridor: string; alert_date: string | null; peak_impact_date: string; lead_time_days: number | null; }
 
 export const api = {
@@ -46,6 +51,7 @@ export const api = {
   suppliers: () => get<Supplier[]>("/api/assets/suppliers"),
   grades: () => get<Record<string, GradeInfo>>("/api/assets/grades"),
   events: () => get<IntelEvent[]>("/api/intel/events"),
+  newsStatus: () => get<NewsStatus>("/api/intel/news/status"),
   backtests: () => get<BacktestRow[]>("/api/intel/backtest"),
   refineries: () => get<Refinery[]>("/api/assets/refineries"),
   ports: () => get<Port[]>("/api/assets/ports"),
