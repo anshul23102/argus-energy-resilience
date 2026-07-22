@@ -23,8 +23,9 @@ def _briefing_template(ctx: dict) -> str:
     h = ctx["scenario"]["headline"]
     p = ctx["procurement"]
     cp = ctx["chokepoint_name"]
+    severity_word = "cut" if ctx["inputs"].get("shock_type") == "opec_cut" else "closure"
     lines = [
-        f"SITREP — {cp} disruption ({ctx['inputs']['closure_pct']:.0f}% closure scenario)",
+        f"SITREP — {cp} disruption ({ctx['inputs']['closure_pct']:.0f}% {severity_word} scenario)",
         f"Threat level: {ctx['risk']['posterior_horizon_prob']*100:.1f}% (30d posterior, "
         f"{len(ctx['risk']['drivers'])} evidence drivers).",
         f"Exposure: {ctx['inputs']['exposure_pct']}% of India's {ctx['inputs']['india_imports_mbd']} mb/d imports.",
@@ -55,35 +56,49 @@ def _briefing_llm(ctx: dict) -> tuple[str, str] | None:
     return llm_complete(prompt, json_mode=False)
 
 
-def respond(chokepoint_id: str, closure_pct: float = 60.0, duration_days: int = 21,
-            brent_now: float | None = None) -> dict:
+def respond(chokepoint_id: str | None, closure_pct: float = 60.0, duration_days: int = 21,
+            brent_now: float | None = None, shock_type: str = "chokepoint_closure") -> dict:
     clock: list[dict] = []
     t0 = time.time()
 
     def tick(stage: str):
         clock.append({"stage": stage, "elapsed_s": round(time.time() - t0, 2)})
 
-    risk = ENGINE.corridor_risk(chokepoint_id)
+    if shock_type == "opec_cut":
+        risk = max(
+            (ENGINE.supplier_risk(sid) for sid in data.OPEC_PLUS_SUPPLIER_IDS),
+            key=lambda r: r["posterior_horizon_prob"],
+        )
+    else:
+        risk = ENGINE.corridor_risk(chokepoint_id)
     tick("watchtower: threat assessed")
 
     unmanaged = scenario.run(chokepoint_id, closure_pct, duration_days,
-                             managed=False, brent_now=brent_now)
+                             managed=False, brent_now=brent_now, shock_type=shock_type)
     managed = scenario.run(chokepoint_id, closure_pct, duration_days,
-                           managed=True, brent_now=brent_now)
+                           managed=True, brent_now=brent_now, shock_type=shock_type)
     tick("simulator: cascade modelled (2x1000 Monte Carlo runs)")
 
-    exposure = graph.supply_at_risk(chokepoint_id) / 100.0
     a = data.assumptions()
     imports_mbd = a["demand"]["india_crude_processing_mbd"]["value"] * \
         a["demand"]["import_dependency_pct"]["value"] / 100.0
-    gap = round(imports_mbd * exposure * closure_pct / 100.0, 3)
-    proc = procurement.optimize(gap, closed_chokepoints=[chokepoint_id], brent_now=brent_now)
+    if shock_type == "opec_cut":
+        exposure = data.opec_plus_exposure_pct() / 100.0
+        gap = round(imports_mbd * exposure * closure_pct / 100.0, 3)
+        proc = procurement.optimize(gap, closed_chokepoints=[], brent_now=brent_now,
+                                    excluded_suppliers=list(data.OPEC_PLUS_SUPPLIER_IDS))
+    else:
+        exposure = graph.supply_at_risk(chokepoint_id) / 100.0
+        gap = round(imports_mbd * exposure * closure_pct / 100.0, 3)
+        proc = procurement.optimize(gap, closed_chokepoints=[chokepoint_id], brent_now=brent_now)
     tick("trader: replacement mix optimized (LP)")
 
     reserve = spr.schedule(gap, proc.get("first_relief_days"), proc.get("coverage_pct", 0.0))
     tick("reservist: SPR bridge scheduled")
 
-    cp_name = next(c["name"] for c in data.chokepoints() if c["id"] == chokepoint_id)
+    cp_name = "OPEC+ coalition" if shock_type == "opec_cut" else next(
+        c["name"] for c in data.chokepoints() if c["id"] == chokepoint_id
+    )
     ctx = {
         "chokepoint_name": cp_name, "inputs": managed["inputs"], "risk": risk,
         "scenario": managed, "unmanaged": unmanaged["headline"],
