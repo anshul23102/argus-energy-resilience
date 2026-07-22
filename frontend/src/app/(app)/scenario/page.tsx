@@ -160,6 +160,7 @@ export default function ScenarioPage() {
                 ["GDP impact", `${h.gdp_impact_bps_p50} bps`, "Estimated hit to India's GDP growth, in basis points, from the crude price shock."],
                 ["Min cover, managed", `${h.min_stock_days_p50}d`, "Lowest crude stock, in days of cover, India reaches if the response engine acts."],
                 ["Min cover, unmanaged", `${hu.min_stock_days_p50}d`, "Same measure with no coordinated response, replacement barrels, or SPR release."],
+                ["Power stress", `${h.power_load_shedding_hours_p50}h/day`, "Estimated daily load-shedding from indirect power-sector strain: diesel backup capacity squeezed by refinery run cuts, plus gas-fired generation curtailed by generation cost stress. Not a direct oil-to-electricity effect — India's grid is barely oil-fired."],
                 ["Response time", `${res.total_response_seconds}s`, "Wall-clock time this simulation actually took to run, end to end, on this machine."],
               ].map(([k, v, tip]) => (
                 <div key={k}>
