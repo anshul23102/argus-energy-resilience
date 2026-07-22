@@ -27,6 +27,11 @@ export interface CorridorRisk {
   prior_horizon_prob: number; posterior_horizon_prob: number;
   drivers: { summary: string; severity: string; source: string; age_days: number; likelihood_ratio_applied: number }[];
 }
+export interface SupplierRisk {
+  supplier: string; horizon_days: number; prior_annual_pct: number;
+  prior_horizon_prob: number; posterior_horizon_prob: number;
+  drivers: { summary: string; severity: string; source: string; age_days: number; likelihood_ratio_applied: number }[];
+}
 
 export interface Terminal { id: string; name: string; lat: number; lon: number; basin: string; grades: string[]; }
 export interface Supplier {
@@ -59,5 +64,6 @@ export const api = {
   chokepoints: () => get<Chokepoint[]>("/api/assets/chokepoints"),
   routes: () => get<Route[]>("/api/assets/routes"),
   corridorRisk: () => get<CorridorRisk[]>("/api/risk/corridors"),
+  supplierRisk: () => get<SupplierRisk[]>("/api/risk/suppliers"),
   graphStats: () => get<{ nodes: number; edges: number; by_kind: Record<string, number> }>("/api/assets/graph/stats"),
 };

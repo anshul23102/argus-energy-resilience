@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import {
   api, BacktestRow, Chokepoint, CorridorRisk, GradeInfo, IntelEvent, NewsStatus, Port,
-  Refinery, Route, SprSite, Supplier,
+  Refinery, Route, SprSite, Supplier, SupplierRisk,
 } from "./api";
 
 interface NetworkData {
@@ -15,6 +15,7 @@ interface NetworkData {
   suppliers: Supplier[];
   grades: Record<string, GradeInfo>;
   risk: CorridorRisk[];
+  supplierRisk: SupplierRisk[];
   intel: IntelEvent[];
   backtests: BacktestRow[];
   newsStatus: NewsStatus | null;
@@ -25,7 +26,7 @@ interface NetworkData {
 
 const EMPTY: NetworkData = {
   refineries: [], ports: [], spr: [], chokepoints: [], routes: [], suppliers: [],
-  grades: {}, risk: [], intel: [], backtests: [], newsStatus: null, graphStats: null,
+  grades: {}, risk: [], supplierRisk: [], intel: [], backtests: [], newsStatus: null, graphStats: null,
   loaded: false, error: false,
 };
 
@@ -38,14 +39,14 @@ export function NetworkDataProvider({ children }: { children: React.ReactNode })
     let cancelled = false;
     Promise.all([
       api.refineries(), api.ports(), api.spr(), api.chokepoints(), api.routes(),
-      api.corridorRisk(), api.graphStats(), api.suppliers(), api.grades(),
+      api.corridorRisk(), api.supplierRisk(), api.graphStats(), api.suppliers(), api.grades(),
       api.events(), api.backtests(), api.newsStatus(),
     ])
-      .then(([rf, po, sp, cp, rt, rk, gs, su, gr, ev, bt, ns]) => {
+      .then(([rf, po, sp, cp, rt, rk, srk, gs, su, gr, ev, bt, ns]) => {
         if (cancelled) return;
         setData({
           refineries: rf, ports: po, spr: sp, chokepoints: cp, routes: rt,
-          risk: rk, suppliers: su, grades: gr, intel: ev, backtests: bt,
+          risk: rk, supplierRisk: srk, suppliers: su, grades: gr, intel: ev, backtests: bt,
           newsStatus: ns, graphStats: { nodes: gs.nodes, edges: gs.edges },
           loaded: true, error: false,
         });
@@ -53,10 +54,10 @@ export function NetworkDataProvider({ children }: { children: React.ReactNode })
       .catch(() => !cancelled && setData((d) => ({ ...d, error: true })));
 
     const t = setInterval(() => {
-      Promise.all([api.corridorRisk(), api.events(), api.newsStatus()])
-        .then(([r, e, ns]) => {
+      Promise.all([api.corridorRisk(), api.supplierRisk(), api.events(), api.newsStatus()])
+        .then(([r, sr, e, ns]) => {
           if (cancelled) return;
-          setData((d) => ({ ...d, risk: r, intel: e, newsStatus: ns }));
+          setData((d) => ({ ...d, risk: r, supplierRisk: sr, intel: e, newsStatus: ns }));
         })
         .catch(() => {});
     }, 60_000);
