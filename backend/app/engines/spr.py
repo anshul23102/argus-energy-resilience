@@ -6,6 +6,8 @@ Reports the schedule, days of bridge provided, and end-state reserve.
 """
 from __future__ import annotations
 
+import math
+
 from ..core import data
 
 
@@ -33,6 +35,17 @@ def schedule(gap_mbd: float, first_relief_days: int | None,
             break
 
     total_released = reserve_mbbl - remaining
+
+    ra = data.assumptions()["spr"]
+    max_replenishment_mbd = ra["max_replenishment_mbd"]["value"]
+    cooldown_days = ra["replenishment_cooldown_days"]["value"]
+    refill_needed_mbbl = max(0.0, reserve_mbbl - remaining)
+    replenishment_start_day = relief_day + cooldown_days
+    replenishment_window_days = (
+        math.ceil(refill_needed_mbbl / max_replenishment_mbd) if refill_needed_mbbl > 0 else 0
+    )
+    replenishment_complete_day = replenishment_start_day + replenishment_window_days
+
     return {
         "reserve_start_mbbl": round(reserve_mbbl, 1),
         "reserve_end_mbbl": round(remaining, 1),
@@ -41,5 +54,13 @@ def schedule(gap_mbd: float, first_relief_days: int | None,
         "bridge_days_at_full_rate": round(reserve_mbbl / spr_max / 1.0, 0) if spr_max else 0,
         "schedule_head": days[:10],
         "days_active": len(days),
+        "replenishment": {
+            "refill_needed_mbbl": round(refill_needed_mbbl, 1),
+            "max_replenishment_mbd": max_replenishment_mbd,
+            "cooldown_days": cooldown_days,
+            "replenishment_start_day": replenishment_start_day,
+            "replenishment_window_days": replenishment_window_days,
+            "replenishment_complete_day": replenishment_complete_day,
+        },
         "note": "ISPRL Phase I only (5.33 MMT); Phase II modelled unavailable.",
     }
