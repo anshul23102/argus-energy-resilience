@@ -34,6 +34,15 @@ const GROUPS: { title: string; description: string; params: Param[] }[] = [
       { path: "risk_engine.evidence_halflife_days", label: "Evidence half life", unit: "days" },
     ],
   },
+  {
+    title: "Power sector",
+    description: "Indirect strain on India's grid from a crude shock: diesel backup capacity and gas-fired generation cost, not direct oil-to-power substitution.",
+    params: [
+      { path: "power_sector.diesel_dependent_backup_capacity_gw", label: "Diesel backup capacity", unit: "GW" },
+      { path: "power_sector.gas_power_capacity_gw", label: "Gas-fired power capacity", unit: "GW" },
+      { path: "power_sector.gas_price_oil_linkage_pct", label: "Gas price oil-linkage", unit: "%" },
+    ],
+  },
 ];
 
 type Values = Record<string, { value: number; confidence: string; overridden: boolean }>;
