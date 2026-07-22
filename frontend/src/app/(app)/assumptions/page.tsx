@@ -32,6 +32,8 @@ const GROUPS: { title: string; description: string; params: Param[] }[] = [
       { path: "response.war_risk_premium_usd_bbl", label: "War risk premium", unit: "$/bbl" },
       { path: "scenario_engine.refinery_min_run_rate_pct", label: "Refinery minimum run rate", unit: "%" },
       { path: "risk_engine.evidence_halflife_days", label: "Evidence half life", unit: "days" },
+      { path: "logistics.available_tankers_per_route", label: "Tankers available per route", unit: "ships" },
+      { path: "logistics.crisis_active_discharge_points", label: "Active discharge points", unit: "ports" },
     ],
   },
   {
