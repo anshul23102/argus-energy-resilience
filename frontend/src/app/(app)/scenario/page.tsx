@@ -184,8 +184,10 @@ export default function ScenarioPage() {
                 </tbody>
               </table>
               <p className="caption mt-4">
-                First seaborne relief in {res.procurement.first_relief_days ?? "unknown"} days, premium
-                ${res.procurement.daily_premium_musd}M per day above baseline.
+                First seaborne relief in {res.procurement.first_relief_days ?? "unknown"} days,{" "}
+                {res.procurement.daily_premium_musd >= 0
+                  ? `premium $${res.procurement.daily_premium_musd}M per day above baseline.`
+                  : `$${Math.abs(res.procurement.daily_premium_musd)}M per day cheaper than baseline.`}
               </p>
             </div>
 
