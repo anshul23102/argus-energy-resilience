@@ -75,6 +75,13 @@ response:
     russia: {value: 0.4, note: "ESPO via Kozmino + discounted Urals"}
     note: "Incremental mb/d each supplier could realistically add for India within weeks, given the shock; expert-judgment, editable"
 
+power_sector:
+  diesel_share_of_refinery_output_pct: {value: 40, note: "Diesel/HSD share of Indian refinery product slate", source: "PPAC product-wise refinery output approx", confidence: medium}
+  diesel_dependent_backup_capacity_gw: {value: 90, note: "National diesel genset backup capacity (telecom, industry, DISCOM emergency), order-of-magnitude", confidence: low}
+  gas_power_capacity_gw: {value: 25, note: "India's gas-based power generation capacity, largely used as peaking/marginal supply", source: "CEA installed capacity report approx", confidence: medium}
+  gas_price_oil_linkage_pct: {value: 60, note: "Approximate share of India's gas/LNG procurement cost that moves with oil price benchmarks", confidence: low}
+  load_shedding_hours_per_gw_deficit: {value: 0.15, note: "Expert-judgment mapping from effective generation deficit (GW) to daily load-shedding hours during a stress event", confidence: low}
+
 # Confidence legend: high = published hard data; medium = published estimate ranges;
 # low = order-of-magnitude expert judgment (flagged in UI); design_choice = tunable knob.
 # LOW-CONFIDENCE VALUES ARE THE POINT: they are visible, editable, and stress-testable,
