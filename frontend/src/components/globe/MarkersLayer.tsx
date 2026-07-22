@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import * as THREE from "three";
 import { geoToSphere, geoToFlat, GLOBE_RADIUS } from "@/lib/geo/coordinates";
@@ -24,11 +24,29 @@ interface MarkersLayerProps {
 }
 
 const tmpMatrix = new THREE.Matrix4();
-const tmpColor = new THREE.Color();
 const tmpVec = new THREE.Vector3();
 
-/** One instanced-mesh marker layer (chokepoints, refineries, ports, SPR sites, or supplier terminals). Positions morph globe<->flat every frame from morphProgressRef; picking uses InstancedMesh's per-instance raycasting with a front-face filter so a marker on the globe's far side can't be hovered/clicked through. */
-export default function MarkersLayer({ points, onHover, onClick, interactive = true }: MarkersLayerProps) {
+function selectedRgb([r, g, b]: [number, number, number]): [number, number, number] {
+  return [
+    Math.round(r * 0.4 + 235 * 0.6),
+    Math.round(g * 0.4 + 185 * 0.6),
+    Math.round(b * 0.4 + 70 * 0.6),
+  ];
+}
+
+interface MarkerGroupProps {
+  color: string;
+  points: MarkerPoint[];
+  onHover?: (text: string | null, x: number, y: number) => void;
+  onClick?: (id: string) => void;
+  interactive?: boolean;
+}
+
+/** One color's worth of markers as a single InstancedMesh. A flat `meshBasicMaterial
+ * color` (not per-instance vertex colors) is the whole point here — it's a plain,
+ * always-correct material property with no InstancedMesh.instanceColor timing or
+ * support dependency, unlike the per-instance vertexColors approach this replaced. */
+function MarkerGroup({ color, points, onHover, onClick, interactive = true }: MarkerGroupProps) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const { camera } = useThree();
 
@@ -36,16 +54,6 @@ export default function MarkersLayer({ points, onHover, onClick, interactive = t
     () => points.map((p) => ({ sphere: geoToSphere(p.lon, p.lat, GLOBE_RADIUS * 1.01), flat: geoToFlat(p.lon, p.lat) })),
     [points],
   );
-
-  useEffect(() => {
-    if (!meshRef.current) return;
-    points.forEach((p, i) => {
-      tmpColor.setRGB(p.color[0] / 255, p.color[1] / 255, p.color[2] / 255);
-      if (p.selected) tmpColor.lerp(new THREE.Color("#ebb946"), 0.6);
-      meshRef.current!.setColorAt(i, tmpColor);
-    });
-    if (meshRef.current.instanceColor) meshRef.current.instanceColor.needsUpdate = true;
-  }, [points]);
 
   useFrame(() => {
     if (!meshRef.current) return;
@@ -82,19 +90,52 @@ export default function MarkersLayer({ points, onHover, onClick, interactive = t
     onClick?.(points[e.instanceId]?.id);
   };
 
-  if (points.length === 0) return null;
-
   return (
     <instancedMesh
       ref={meshRef}
-      args={[null as unknown as THREE.BufferGeometry, null as unknown as THREE.Material, points.length]}
+      args={[undefined, undefined, points.length]}
       onPointerMove={interactive ? handlePointerMove : undefined}
       onPointerOut={interactive ? handlePointerOut : undefined}
       onClick={interactive ? handleClick : undefined}
       renderOrder={3}
     >
       <sphereGeometry args={[1, 12, 12]} />
-      <meshBasicMaterial vertexColors toneMapped={false} />
+      <meshBasicMaterial color={color} toneMapped={false} />
     </instancedMesh>
+  );
+}
+
+/** One marker layer (chokepoints, refineries, ports, SPR sites, or supplier terminals),
+ * split into one MarkerGroup per distinct color — cheap, since each layer only ever has
+ * a handful of colors (a few risk bands, or one fixed color). */
+export default function MarkersLayer({ points, onHover, onClick, interactive = true }: MarkersLayerProps) {
+  const groups = useMemo(() => {
+    const byKey = new Map<string, { color: string; points: MarkerPoint[] }>();
+    for (const p of points) {
+      const rgb = p.selected ? selectedRgb(p.color) : p.color;
+      const key = rgb.join(",");
+      let group = byKey.get(key);
+      if (!group) {
+        group = { color: `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`, points: [] };
+        byKey.set(key, group);
+      }
+      group.points.push(p);
+    }
+    return Array.from(byKey.entries()).map(([key, g]) => ({ key, ...g }));
+  }, [points]);
+
+  return (
+    <>
+      {groups.map((g) => (
+        <MarkerGroup
+          key={g.key}
+          color={g.color}
+          points={g.points}
+          onHover={onHover}
+          onClick={onClick}
+          interactive={interactive}
+        />
+      ))}
+    </>
   );
 }

@@ -143,8 +143,8 @@ export default function GlobeMap({
     <div className="relative h-full w-full">
       <Canvas
         camera={{ position: cameraPosition, fov: 45, near: 0.1, far: 100 }}
-        gl={{ antialias: true, alpha: false }}
-        dpr={[1, 2]}
+        gl={{ antialias: false, alpha: false, powerPreference: "high-performance" }}
+        dpr={[1, 1.5]}
         style={{ background: "#050b16" }}
       >
         <CameraRig isFlat={isFlat} globePosition={cameraPosition} />
