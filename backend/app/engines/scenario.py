@@ -132,6 +132,17 @@ def run(
     min_stock_p50 = float(np.percentile(stock_traj.min(axis=1), 50))
     days_below_floor = float((stock_traj < floor_days).sum(axis=1).mean())
 
+    ps = a["power_sector"]
+    avg_util_deficit = float(np.percentile((1.0 - util_traj).mean(axis=1), 50))
+    diesel_shortfall_pct = avg_util_deficit * ps["diesel_share_of_refinery_output_pct"]["value"] / 100.0
+    backup_capacity_lost_gw = ps["diesel_dependent_backup_capacity_gw"]["value"] * diesel_shortfall_pct
+
+    gas_cost_increase_pct = (sustained_delta / brent0) * ps["gas_price_oil_linkage_pct"]["value"] / 100.0 if brent0 else 0.0
+    gas_capacity_curtailed_gw = ps["gas_power_capacity_gw"]["value"] * min(1.0, max(0.0, gas_cost_increase_pct))
+
+    power_deficit_gw = backup_capacity_lost_gw + gas_capacity_curtailed_gw
+    power_load_shedding_hours = power_deficit_gw * ps["load_shedding_hours_per_gw_deficit"]["value"]
+
     return {
         "inputs": {"chokepoint": chokepoint_id, "closure_pct": closure_pct,
                    "mean_duration_days": duration_days, "horizon_days": horizon_days,
@@ -147,6 +158,8 @@ def run(
             "cad_impact_pct_gdp_p50": round(cad_pct, 2),
             "min_stock_days_p50": round(min_stock_p50, 1),
             "avg_days_below_floor": round(days_below_floor, 1),
+            "power_deficit_gw_p50": round(power_deficit_gw, 2),
+            "power_load_shedding_hours_p50": round(power_load_shedding_hours, 2),
         },
-        "assumption_refs": ["response.*", "inventory.*", "economics.*", "scenario_engine.*"],
+        "assumption_refs": ["response.*", "inventory.*", "economics.*", "scenario_engine.*", "power_sector.*"],
     }

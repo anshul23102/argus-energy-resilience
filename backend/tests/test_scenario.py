@@ -28,3 +28,20 @@ def test_chokepoint_closure_is_unaffected_by_shock_type_default():
     expected_exposure_pct = round(graph.supply_at_risk("hormuz"), 1)
     assert result["inputs"]["exposure_pct"] == expected_exposure_pct
     assert result["inputs"]["shock_type"] == "chokepoint_closure"
+
+
+def test_headline_includes_power_stress_fields():
+    result = scenario.run("hormuz", closure_pct=60.0, duration_days=21, n_runs=50)
+    h = result["headline"]
+    assert "power_deficit_gw_p50" in h
+    assert "power_load_shedding_hours_p50" in h
+    assert h["power_deficit_gw_p50"] >= 0
+    assert h["power_load_shedding_hours_p50"] >= 0
+
+
+def test_more_severe_closure_does_not_reduce_power_stress():
+    """A harsher closure should never show LESS power stress than a milder one —
+    monotonicity sanity check on the diesel/gas transmission chain."""
+    mild = scenario.run("hormuz", closure_pct=20.0, duration_days=21, n_runs=200, seed=7)
+    severe = scenario.run("hormuz", closure_pct=90.0, duration_days=21, n_runs=200, seed=7)
+    assert severe["headline"]["power_load_shedding_hours_p50"] >= mild["headline"]["power_load_shedding_hours_p50"]
