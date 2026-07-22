@@ -49,6 +49,7 @@ function BandChart({ managed, unmanaged, floor }: { managed: Band; unmanaged: Ba
 
 export default function ScenarioPage() {
   const d = useNetworkData();
+  const [shockType, setShockType] = useState<"chokepoint_closure" | "opec_cut">("chokepoint_closure");
   const [cp, setCp] = useState("hormuz");
   const [closure, setClosure] = useState(60);
   const [duration, setDuration] = useState(21);
@@ -64,7 +65,10 @@ export default function ScenarioPage() {
       const r = await fetch(`${BASE}/api/scenario/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chokepoint: cp, closure_pct: closure, duration_days: duration }),
+        body: JSON.stringify({
+          chokepoint: shockType === "opec_cut" ? null : cp,
+          closure_pct: closure, duration_days: duration, shock_type: shockType,
+        }),
       });
       if (!r.ok) throw new Error(String(r.status));
       setRes(await r.json());
@@ -91,16 +95,35 @@ export default function ScenarioPage() {
 
       <div className="card mb-8 mt-8 flex flex-wrap items-end gap-6 p-5">
         <label className="flex flex-col gap-1.5">
-          <span className="section-label">Chokepoint</span>
-          <select
-            value={cp} onChange={(e) => setCp(e.target.value)}
-            className="rounded-md border border-hairline bg-surface-2 px-3 py-2 text-[14px] text-ink focus:border-accent focus:outline-none"
-          >
-            {chokepointOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-          </select>
+          <span className="section-label">Shock type</span>
+          <div className="flex gap-1 rounded-md bg-surface-2 p-1">
+            {([
+              ["chokepoint_closure", "Chokepoint closure"],
+              ["opec_cut", "OPEC+ production cut"],
+            ] as const).map(([value, label]) => (
+              <button
+                key={value}
+                onClick={() => setShockType(value)}
+                className={`rounded px-3 py-1.5 text-[13px] font-medium transition-colors duration-150 ${shockType === value ? "bg-accent text-accent-ink" : "text-ink-2 hover:text-ink"}`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </label>
+        {shockType === "chokepoint_closure" && (
+          <label className="flex flex-col gap-1.5">
+            <span className="section-label">Chokepoint</span>
+            <select
+              value={cp} onChange={(e) => setCp(e.target.value)}
+              className="rounded-md border border-hairline bg-surface-2 px-3 py-2 text-[14px] text-ink focus:border-accent focus:outline-none"
+            >
+              {chokepointOptions.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
+          </label>
+        )}
         <label className="flex flex-col gap-1.5">
-          <span className="section-label">Closure severity, {closure}%</span>
+          <span className="section-label">{shockType === "opec_cut" ? "Cut" : "Closure"} severity, {closure}%</span>
           <input type="range" min={10} max={100} step={5} value={closure}
             onChange={(e) => setClosure(+e.target.value)} className="w-48 accent-[color:var(--accent)]" />
         </label>
