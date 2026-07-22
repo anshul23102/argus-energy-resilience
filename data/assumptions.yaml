@@ -84,6 +84,10 @@ power_sector:
   gas_price_oil_linkage_pct: {value: 60, note: "Approximate share of India's gas/LNG procurement cost that moves with oil price benchmarks", confidence: low}
   load_shedding_hours_per_gw_deficit: {value: 0.15, note: "Expert-judgment mapping from effective generation deficit (GW) to daily load-shedding hours during a stress event", confidence: low}
 
+spr:
+  max_replenishment_mbd: {value: 0.15, note: "Max sustainable SPR refill/injection rate via supplemental purchases post-crisis; typically slower than emergency drawdown since it's discretionary, budget-paced procurement, not an emergency release", confidence: low}
+  replenishment_cooldown_days: {value: 14, note: "Days after first relief cargo arrives before dedicated refill purchasing begins (market/budget lag)", confidence: low}
+
 # Confidence legend: high = published hard data; medium = published estimate ranges;
 # low = order-of-magnitude expert judgment (flagged in UI); design_choice = tunable knob.
 # LOW-CONFIDENCE VALUES ARE THE POINT: they are visible, editable, and stress-testable,
