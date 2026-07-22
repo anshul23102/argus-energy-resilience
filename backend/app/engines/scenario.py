@@ -26,7 +26,7 @@ def _tri(rng: np.random.Generator, spec: dict, n: int) -> np.ndarray:
 
 
 def run(
-    chokepoint_id: str,
+    chokepoint_id: str | None,
     closure_pct: float = 60.0,
     duration_days: int = 21,
     horizon_days: int = 90,
@@ -34,13 +34,13 @@ def run(
     managed: bool = True,
     brent_now: float | None = None,
     seed: int = 7,
+    shock_type: str = "chokepoint_closure",
 ) -> dict:
     a = data.assumptions()
     rng = np.random.default_rng(seed)
 
     imports_mbd = a["demand"]["india_crude_processing_mbd"]["value"] * \
         a["demand"]["import_dependency_pct"]["value"] / 100.0
-    exposure = graph.supply_at_risk(chokepoint_id) / 100.0          # share of imports
     commercial_days = a["inventory"]["commercial_stock_days"]["value"]
     spr_days = 9.5                                                   # ISPRL Phase I cover
     floor_days = a["inventory"]["min_stock_days_floor"]["value"]
@@ -50,8 +50,15 @@ def run(
     pass_through = a["economics"]["retail_pass_through_inr_per_litre_per_usd"]["value"]
     brent0 = brent_now or a["economics"]["brent_default_usd"]["value"]
 
-    cp = next(c for c in data.chokepoints() if c["id"] == chokepoint_id)
-    global_flow = cp.get("daily_oil_flow_mbd") or 0.0
+    if shock_type == "opec_cut":
+        exposure = data.opec_plus_exposure_pct() / 100.0          # share of imports
+        global_flow = a["scenario_engine"]["opec_plus_global_production_mbd"]["value"]
+        allow_bypass = False    # a production cut has nothing to physically bypass
+    else:
+        cp = next(c for c in data.chokepoints() if c["id"] == chokepoint_id)
+        exposure = graph.supply_at_risk(chokepoint_id) / 100.0      # share of imports
+        global_flow = cp.get("daily_oil_flow_mbd") or 0.0
+        allow_bypass = chokepoint_id == "hormuz"
 
     # stochastic inputs per run
     durations = np.minimum(
@@ -61,8 +68,10 @@ def run(
     ramp_days = _tri(rng, a["response"]["reroute_ramp_days"], n_runs).astype(int)
 
     spare = a["response"]["supplier_spare_capacity_mbd"]
+    excluded_from_relief = data.OPEC_PLUS_SUPPLIER_IDS if shock_type == "opec_cut" else set()
     relief_ceiling_mbd = sum(
-        v["value"] for k, v in spare.items() if isinstance(v, dict) and "value" in v
+        v["value"] for k, v in spare.items()
+        if isinstance(v, dict) and "value" in v and k not in excluded_from_relief
     )
 
     closure = closure_pct / 100.0
@@ -76,7 +85,7 @@ def run(
         dur = durations[i]
         stocks = commercial_days + spr_days           # days-of-processing cover
         gross_loss = imports_mbd * exposure * closure  # mb/d India-bound while closed
-        bypass_recovery = gross_loss * bypass[i] * 0.5 if chokepoint_id == "hormuz" else 0.0
+        bypass_recovery = gross_loss * bypass[i] * 0.5 if allow_bypass else 0.0
 
         for t in days:
             closed = t < dur
@@ -128,7 +137,7 @@ def run(
                    "mean_duration_days": duration_days, "horizon_days": horizon_days,
                    "n_runs": n_runs, "managed": managed, "brent_start": brent0,
                    "exposure_pct": round(exposure * 100, 1),
-                   "india_imports_mbd": round(imports_mbd, 2)},
+                   "india_imports_mbd": round(imports_mbd, 2), "shock_type": shock_type},
         "trajectories": {"stock_days": band(stock_traj), "refinery_utilization": band(util_traj),
                           "brent": band(brent_traj)},
         "headline": {
