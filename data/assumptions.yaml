@@ -21,6 +21,8 @@ logistics:
   war_risk_premium_multiplier_hormuz_crisis: {value: 4.0, note: "War-risk insurance multiplier during active Hormuz crisis vs baseline", source: "2019 tanker attack episode reporting", confidence: low}
   freight_baseline_ws: {value: 60, note: "Worldscale points baseline PG->India, pre-crisis", confidence: low}
   port_max_vlcc_per_day: {value: 2, note: "Per SPM discharge realistic cap", confidence: medium}
+  available_tankers_per_route: {value: 10, note: "Tankers realistically available/willing to service a given route during a crisis (round-trip constrained); order-of-magnitude default applied uniformly across routes", confidence: low}
+  crisis_active_discharge_points: {value: 1, note: "Number of India import points (SPMs/ports) that can realistically absorb surge cargo simultaneously during a crisis", confidence: low}
 
 scenario_engine:
   monte_carlo_runs: {value: 2000}
