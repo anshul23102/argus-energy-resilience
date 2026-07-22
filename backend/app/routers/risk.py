@@ -1,4 +1,5 @@
-"""Risk endpoints: corridor risk scores + manual event injection (until live feeds land)."""
+"""Risk endpoints: corridor + supplier risk scores, and manual event injection
+(until live feeds land)."""
 from fastapi import APIRouter
 from pydantic import BaseModel
 
@@ -17,8 +18,19 @@ def corridor(chokepoint_id: str, horizon_days: int = 30):
     return ENGINE.corridor_risk(chokepoint_id, horizon_days)
 
 
+@router.get("/suppliers")
+def suppliers(horizon_days: int = 30):
+    return ENGINE.all_suppliers(horizon_days)
+
+
+@router.get("/suppliers/{supplier_id}")
+def supplier(supplier_id: str, horizon_days: int = 30):
+    return ENGINE.supplier_risk(supplier_id, horizon_days)
+
+
 class EventIn(BaseModel):
-    corridor: str
+    corridor: str | None = None
+    supplier: str | None = None
     severity: str
     summary: str
     source: str = "manual"

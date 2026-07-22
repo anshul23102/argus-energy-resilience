@@ -89,13 +89,13 @@ def poll(hours: int = 24, max_records: int = 40) -> dict:
         # Cluster: N articles about the same (corridor, severity) in one poll are one
         # incident with N corroborations — not N independent incidents. Without this,
         # heavy news coverage would saturate the Bayesian engine.
-        clusters: dict[tuple[str, str], list[tuple[dict, str]]] = {}
+        clusters: dict[tuple[str | None, str | None, str], list[tuple[dict, str]]] = {}
         for ev, domain in extracted:
-            clusters.setdefault((ev["corridor"], ev["severity"]), []).append((ev, domain))
-        for (corridor, severity), members in clusters.items():
+            clusters.setdefault((ev.get("corridor"), ev.get("supplier"), ev["severity"]), []).append((ev, domain))
+        for (corridor, supplier, severity), members in clusters.items():
             ev, domain = members[0]
             ENGINE.ingest(Event(
-                corridor=corridor, severity=severity, summary=ev["summary"],
+                corridor=corridor, supplier=supplier, severity=severity, summary=ev["summary"],
                 source=f"{stats['source']}:{domain} (+{len(members) - 1} corroborating)",
                 corroborations=len(members),
             ))

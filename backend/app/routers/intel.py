@@ -32,7 +32,7 @@ def news_status():
 @router.get("/events")
 def get_events():
     return [
-        {"corridor": e.corridor, "severity": e.severity, "summary": e.summary,
+        {"corridor": e.corridor, "supplier": e.supplier, "severity": e.severity, "summary": e.summary,
          "source": e.source, "timestamp": e.timestamp, "corroborations": e.corroborations}
         for e in sorted(ENGINE.events(), key=lambda e: -e.timestamp)[:50]
     ]
