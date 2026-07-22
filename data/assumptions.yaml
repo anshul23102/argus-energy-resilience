@@ -29,6 +29,7 @@ scenario_engine:
   bypass_pipeline_availability_pct: {value: 60, note: "Fraction of Saudi E-W + ADCOP bypass capacity realistically available to reroute India-bound cargoes in crisis", confidence: low}
   refinery_min_run_rate_pct: {value: 60, note: "Below this, refinery units shut down rather than throttle", source: "industry norm", confidence: medium}
   spr_max_drawdown_mbd: {value: 0.35, note: "Max sustainable SPR release rate given cavern/pipeline infrastructure", confidence: low}
+  opec_plus_global_production_mbd: {value: 40.0, note: "Approximate combined OPEC+ crude production baseline", source: "order-of-magnitude, OPEC MOMR/EIA STEO", confidence: low}
 
 risk_engine:
   base_hazard_hormuz_annual_pct: {value: 3.0, note: "Prior annual probability of major (>25% flow) Hormuz disruption", source: "expert-judgment prior; updated by live evidence (Bayesian)", confidence: low}

@@ -40,6 +40,16 @@ def suppliers() -> list[dict]:
     return _load_json("suppliers_grades.json")["suppliers"]
 
 
+OPEC_PLUS_SUPPLIER_IDS = {"russia", "iraq", "saudi-arabia", "uae", "kuwait", "nigeria", "angola"}
+# Simplification: real OPEC+ membership has shifted (e.g. Angola formally left
+# OPEC in Jan 2024); treated as OPEC+-associated here for scenario purposes. This
+# is every supplier in suppliers_grades.json except the USA.
+
+
+def opec_plus_exposure_pct() -> float:
+    return sum(s["share_pct"] for s in suppliers() if s["id"] in OPEC_PLUS_SUPPLIER_IDS)
+
+
 @lru_cache(maxsize=1)
 def grades() -> dict[str, dict]:
     return _load_json("suppliers_grades.json")["grades"]
