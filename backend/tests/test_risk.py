@@ -52,3 +52,43 @@ def test_old_evidence_decays_towards_prior():
     score = engine.corridor_risk("hormuz", horizon_days=30, now_ts=now)
     # after 10 half-lives the multiplicative effect should be negligible
     assert abs(score["posterior_horizon_prob"] - score["prior_horizon_prob"]) < 1e-4
+
+
+def test_supplier_no_evidence_returns_prior_as_posterior():
+    engine = RiskEngine()
+    score = engine.supplier_risk("russia", horizon_days=30)
+    assert score["prior_horizon_prob"] == score["posterior_horizon_prob"]
+    assert score["drivers"] == []
+
+
+def test_unlisted_supplier_gets_nominal_fallback_prior():
+    engine = RiskEngine()
+    score = engine.supplier_risk("some-untracked-supplier", horizon_days=30)
+    assert score["prior_annual_pct"] == 0.5
+    assert 0 < score["prior_horizon_prob"] < 0.01
+
+
+def test_supplier_attack_evidence_raises_posterior_above_prior():
+    engine = RiskEngine()
+    baseline = engine.supplier_risk("russia", horizon_days=30)["posterior_horizon_prob"]
+    engine.ingest(Event(
+        corridor=None, supplier="russia", severity="attack", summary="test supplier event",
+        source="test", corroborations=3,
+    ))
+    updated = engine.supplier_risk("russia", horizon_days=30)["posterior_horizon_prob"]
+    assert updated > baseline
+
+
+def test_supplier_and_corridor_events_are_independent():
+    """A corridor-tagged event must not move a supplier's score, and vice versa —
+    the two axes are independent evidence streams even though they share one
+    Event list and one Bayesian update mechanism."""
+    engine = RiskEngine()
+    corridor_baseline = engine.corridor_risk("hormuz", horizon_days=30)["posterior_horizon_prob"]
+    supplier_baseline = engine.supplier_risk("russia", horizon_days=30)["posterior_horizon_prob"]
+    engine.ingest(Event(
+        corridor=None, supplier="russia", severity="attack", summary="supplier-only event",
+        source="test", corroborations=3,
+    ))
+    assert engine.corridor_risk("hormuz", horizon_days=30)["posterior_horizon_prob"] == corridor_baseline
+    assert engine.supplier_risk("russia", horizon_days=30)["posterior_horizon_prob"] > supplier_baseline
