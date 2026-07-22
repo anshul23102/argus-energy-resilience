@@ -19,15 +19,23 @@ import re
 import httpx
 
 CORRIDORS = ["hormuz", "bab-el-mandeb", "suez", "malacca", "danish-straits"]
+SUPPLIERS = ["russia", "iraq", "saudi-arabia", "uae", "usa", "nigeria", "kuwait", "angola"]
 SEVERITIES = ["rhetoric", "incident", "attack", "partial_closure", "full_closure"]
 
-_BATCH_PROMPT = """You classify news headlines about energy shipping security.
+_BATCH_PROMPT = """You classify news headlines about energy shipping security and crude oil supplier disruption.
 For EACH numbered headline, output one object. Return ONLY a JSON array, same order,
 same length as the input list: [{{"corridor": one of {corridors} or "none",
+"supplier": one of {suppliers} or "none",
 "severity": one of {severities} or "none", "summary": "<=140 chars factual summary"}}, ...]
-severity guide: rhetoric=threats/warnings/drills; incident=jamming/near-miss/harassment;
-attack=strike/seizure/boarding/mine; partial_closure=traffic restricted or major operators
-suspending transit; full_closure=corridor shut. Not about energy shipping security => corridor "none".
+corridor = a shipping chokepoint/lane security event (attack, closure, rerouting near that strait).
+supplier = a disruption to one of these 8 countries' own crude exports (sanctions, export-terminal
+incident, pipeline attack, political instability affecting production/exports) — NOT a corridor
+transit event. A headline may hit corridor, supplier, both, or neither.
+severity guide: rhetoric=threats/warnings/drills/sanction announcements; incident=jamming/near-miss/
+harassment/minor supply hiccup; attack=strike/seizure/boarding/mine/terminal or pipeline attack;
+partial_closure=traffic restricted, major operators suspending transit, or partial export halt;
+full_closure=corridor shut or supplier fully halts exports. Not about shipping security or supplier
+disruption => corridor "none" and supplier "none".
 HEADLINES:
 {texts}"""
 
@@ -39,24 +47,35 @@ _CORRIDOR_PATTERNS = {
     "malacca": r"malacca|singapore strait",
     "danish-straits": r"danish strait|baltic.{0,20}(tanker|oil)|primorsk",
 }
+_SUPPLIER_PATTERNS = {
+    "russia": r"russia|rosneft|urals crude|espo|novorossiysk|primorsk|kozmino",
+    "iraq": r"\biraq\b|basra oil|basrah crude",
+    "saudi-arabia": r"saudi arabia|saudi aramco|ras tanura|\byanbu\b",
+    "uae": r"\buae\b|abu dhabi|adnoc|fujairah|jebel dhanna",
+    "usa": r"u\.?s\.? (crude|oil|sanctions)|texas oil|permian|corpus christi",
+    "nigeria": r"nigeria|bonny light|niger delta|qua iboe",
+    "kuwait": r"\bkuwait\b",
+    "angola": r"\bangola\b|cabinda",
+}
 _SEVERITY_PATTERNS = [
     ("full_closure", r"clos(ed|ure) to (all )?(shipping|traffic)|blockade in effect"),
-    ("partial_closure", r"suspend\w{0,3}\b.{0,25}(transit|shipping|passage|crossing)|reroute|divert(s|ing|ed)? (around|away)|halts?\b.{0,20}(red sea|hormuz|suez)"),
+    ("partial_closure", r"suspend\w{0,3}\b.{0,25}(transit|shipping|passage|crossing|export|shipment)|reroute|divert(s|ing|ed)? (around|away)|halts?\b.{0,20}(red sea|hormuz|suez|export|shipment)"),
     ("attack", r"attack|missile|drone str|struck|seiz(e|ed|ure)|boarded|mine (hit|blast)|explosion|hijack"),
     ("incident", r"jamming|near.miss|harass|intercept|close encounter|fired warning|collision"),
-    ("rhetoric", r"threat(en)?s?|warn(s|ing)?|vows|drill|exercise|escalat"),
+    ("rhetoric", r"threat(en)?s?|warn(s|ing)?|vows|drill|exercise|escalat|sanction"),
 ]
 
 
 def _extract_rules(text: str) -> dict | None:
     t = text.lower()
     corridor = next((c for c, p in _CORRIDOR_PATTERNS.items() if re.search(p, t)), None)
-    if corridor is None:
+    supplier = next((s for s, p in _SUPPLIER_PATTERNS.items() if re.search(p, t)), None)
+    if corridor is None and supplier is None:
         return None
     severity = next((s for s, p in _SEVERITY_PATTERNS if re.search(p, t)), None)
     if severity is None:
         return None
-    return {"corridor": corridor, "severity": severity,
+    return {"corridor": corridor, "supplier": supplier, "severity": severity,
             "summary": text[:140], "extractor": "rules"}
 
 
@@ -140,12 +159,17 @@ def _parse_array(raw: str, n: int) -> list[dict | None] | None:
         return None
     out: list[dict | None] = []
     for item in arr:
-        if (not isinstance(item, dict)
-                or item.get("corridor") not in CORRIDORS
-                or item.get("severity") not in SEVERITIES):
+        if not isinstance(item, dict):
+            out.append(None)
+            continue
+        corridor = item.get("corridor")
+        corridor = corridor if corridor in CORRIDORS else None
+        supplier = item.get("supplier")
+        supplier = supplier if supplier in SUPPLIERS else None
+        if (corridor is None and supplier is None) or item.get("severity") not in SEVERITIES:
             out.append(None)
         else:
-            out.append({"corridor": item["corridor"], "severity": item["severity"],
+            out.append({"corridor": corridor, "supplier": supplier, "severity": item["severity"],
                         "summary": str(item.get("summary", ""))[:140]})
     return out
 
@@ -156,7 +180,7 @@ def extract_batch(texts: list[str]) -> list[dict | None]:
     if not texts:
         return []
     numbered = "\n".join(f"{i + 1}. {t[:300]}" for i, t in enumerate(texts))
-    prompt = _BATCH_PROMPT.format(corridors=CORRIDORS, severities=SEVERITIES, texts=numbered)
+    prompt = _BATCH_PROMPT.format(corridors=CORRIDORS, suppliers=SUPPLIERS, severities=SEVERITIES, texts=numbered)
     got = llm_complete(prompt)
     if got is not None:
         raw, prov = got
