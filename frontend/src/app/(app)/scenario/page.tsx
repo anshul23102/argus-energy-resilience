@@ -17,7 +17,13 @@ interface ScenarioResponse {
   scenario_managed: { headline: Record<string, number>; trajectories: { stock_days: Band } };
   scenario_unmanaged: { headline: Record<string, number>; trajectories: { stock_days: Band } };
   procurement: { feasible: boolean; coverage_pct: number; first_relief_days: number | null; daily_premium_musd: number; orders: Order[] };
-  spr: { total_released_mbbl: number; days_active: number };
+  spr: {
+    total_released_mbbl: number; days_active: number;
+    replenishment: {
+      refill_needed_mbbl: number; replenishment_start_day: number;
+      replenishment_window_days: number; replenishment_complete_day: number;
+    };
+  };
   briefing: string;
   briefing_author: string;
   response_clock: { stage: string; elapsed_s: number }[];
@@ -220,6 +226,16 @@ export default function ScenarioPage() {
               <p className="text-[15px] text-ink-2">
                 {res.spr.total_released_mbbl} million barrels released over {res.spr.days_active} days from ISPRL Phase I.
               </p>
+              {res.spr.replenishment.refill_needed_mbbl > 0 ? (
+                <p className="caption mt-2">
+                  Refill: {res.spr.replenishment.refill_needed_mbbl} mbbl needed. Purchasing begins day{" "}
+                  {res.spr.replenishment.replenishment_start_day}, reserve back to full by day{" "}
+                  {res.spr.replenishment.replenishment_complete_day} ({res.spr.replenishment.replenishment_window_days}{" "}
+                  days of dedicated buying).
+                </p>
+              ) : (
+                <p className="caption mt-2">No drawdown occurred, so no replenishment is needed.</p>
+              )}
             </div>
           </div>
         </div>
