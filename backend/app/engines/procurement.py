@@ -24,7 +24,8 @@ MIN_SOUR_SHARE = 0.5
 
 
 def optimize(gap_mbd: float, closed_chokepoints: list[str],
-             brent_now: float | None = None) -> dict:
+             brent_now: float | None = None,
+             excluded_suppliers: list[str] | None = None) -> dict:
     a = data.assumptions()
     brent0 = brent_now or a["economics"]["brent_default_usd"]["value"]
     war_premium = a["response"]["war_risk_premium_usd_bbl"]["value"]
@@ -33,10 +34,13 @@ def optimize(gap_mbd: float, closed_chokepoints: list[str],
     routes = data.routes()
     suppliers = {s["id"]: s for s in data.suppliers()}
     closed = set(closed_chokepoints)
+    excluded = set(excluded_suppliers or [])
 
     # candidate (supplier, grade, route) triples over OPEN routes
     candidates = []
     for sid, s in suppliers.items():
+        if sid in excluded:
+            continue
         spare = spare_cfg.get(sid, {})
         spare_mbd = spare.get("value", 0.0) if isinstance(spare, dict) else 0.0
         if spare_mbd <= 0:
@@ -107,5 +111,6 @@ def optimize(gap_mbd: float, closed_chokepoints: list[str],
         "first_relief_days": orders[0]["first_arrival_days"] if orders else None,
         "orders": orders,
         "constraints": {"min_sour_share": MIN_SOUR_SHARE,
-                        "closed_chokepoints": sorted(closed)},
+                        "closed_chokepoints": sorted(closed),
+                        "excluded_suppliers": sorted(excluded)},
     }

@@ -34,3 +34,11 @@ def test_closed_chokepoints_are_never_used_in_the_order_sheet():
 def test_impossible_gap_is_infeasible_or_partially_covered():
     result = procurement.optimize(gap_mbd=1_000_000, closed_chokepoints=[])
     assert result["feasible"] is False or result["coverage_pct"] < 100.0
+
+
+def test_excluded_suppliers_are_never_used_in_the_order_sheet():
+    result = procurement.optimize(gap_mbd=0.3, closed_chokepoints=[],
+                                  excluded_suppliers=["saudi-arabia", "russia"])
+    assert result["feasible"] is True
+    for order in result["orders"]:
+        assert order["supplier"] not in {"saudi-arabia", "russia"}
